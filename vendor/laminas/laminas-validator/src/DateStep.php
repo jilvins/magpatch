@@ -16,6 +16,7 @@ use function array_combine;
 use function array_count_values;
 use function array_map;
 use function array_shift;
+use function assert;
 use function ceil;
 use function date_default_timezone_get;
 use function explode;
@@ -27,7 +28,7 @@ use function max;
 use function min;
 use function preg_match;
 use function sprintf;
-use function str_starts_with;
+use function strpos;
 
 use const PHP_INT_MAX;
 
@@ -191,7 +192,7 @@ class DateStep extends Date
     {
         // Custom week format support
         if (
-            str_starts_with($this->format, 'Y-\WW')
+            strpos($this->format, 'Y-\WW') === 0
             && preg_match('/^([0-9]{4})\-W([0-9]{2})/', $value, $matches)
         ) {
             $date = new DateTime();
@@ -203,7 +204,7 @@ class DateStep extends Date
         // Invalid dates can show up as warnings (ie. "2007-02-99")
         // and still return a DateTime object.
         $errors = DateTime::getLastErrors();
-        if (is_array($errors) && $errors['warning_count'] > 0) {
+        if ($errors['warning_count'] > 0) {
             if ($addErrors) {
                 $this->error(self::FALSEFORMAT);
             }
@@ -408,6 +409,7 @@ class DateStep extends Date
             } else {
                 $baseDate = $baseDate->sub($minimumInterval);
             }
+            assert($baseDate !== false);
         }
 
         while (
@@ -419,6 +421,8 @@ class DateStep extends Date
             } else {
                 $baseDate = $baseDate->sub($step);
             }
+
+            assert($baseDate !== false);
 
             // phpcs:ignore SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
             if ($baseDate == $valueDate) {

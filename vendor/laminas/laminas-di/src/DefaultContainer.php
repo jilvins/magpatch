@@ -6,6 +6,8 @@ namespace Laminas\Di;
 
 use Psr\Container\ContainerInterface;
 
+use function get_class;
+
 /**
  * Default IoC container implementation.
  *
@@ -33,7 +35,7 @@ class DefaultContainer implements ContainerInterface
 
         $this->services[InjectorInterface::class]  = $injector;
         $this->services[ContainerInterface::class] = $this;
-        $this->services[$injector::class]          = $injector;
+        $this->services[get_class($injector)]      = $injector;
         $this->services[static::class]             = $this;
     }
 

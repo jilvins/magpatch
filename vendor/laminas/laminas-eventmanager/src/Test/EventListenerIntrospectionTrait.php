@@ -39,7 +39,8 @@ trait EventListenerIntrospectionTrait
      */
     private function getEventsFromEventManager(EventManager $events)
     {
-        $r         = new ReflectionProperty($events, 'events');
+        $r = new ReflectionProperty($events, 'events');
+        $r->setAccessible(true);
         $listeners = $r->getValue($events);
         return array_keys($listeners);
     }
@@ -63,7 +64,8 @@ trait EventListenerIntrospectionTrait
      */
     private function getListenersForEvent($event, EventManager $events, $withPriority = false)
     {
-        $r        = new ReflectionProperty($events, 'events');
+        $r = new ReflectionProperty($events, 'events');
+        $r->setAccessible(true);
         $internal = $r->getValue($events);
 
         $listeners = [];

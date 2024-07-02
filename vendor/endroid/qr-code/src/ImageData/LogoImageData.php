@@ -8,24 +8,39 @@ use Endroid\QrCode\Logo\LogoInterface;
 
 class LogoImageData
 {
+    private string $data;
+
+    /** @var mixed */
+    private $image;
+
+    private string $mimeType;
+    private int $width;
+    private int $height;
+    private bool $punchoutBackground;
+
+    /** @param mixed $image */
     private function __construct(
-        private string $data,
-        private \GdImage|null $image,
-        private string $mimeType,
-        private int $width,
-        private int $height,
-        private bool $punchoutBackground
+        string $data,
+        $image,
+        string $mimeType,
+        int $width,
+        int $height,
+        bool $punchoutBackground
     ) {
+        $this->data = $data;
+        $this->image = $image;
+        $this->mimeType = $mimeType;
+        $this->width = $width;
+        $this->height = $height;
+        $this->punchoutBackground = $punchoutBackground;
     }
 
     public static function createForLogo(LogoInterface $logo): self
     {
-        error_clear_last();
         $data = @file_get_contents($logo->getPath());
 
         if (!is_string($data)) {
-            $errorDetails = error_get_last()['message'] ?? 'invalid data';
-            throw new \Exception(sprintf('Could not read logo image data from path "%s": %s', $logo->getPath(), $errorDetails));
+            throw new \Exception(sprintf('Invalid data at path "%s"', $logo->getPath()));
         }
 
         if (false !== filter_var($logo->getPath(), FILTER_VALIDATE_URL)) {
@@ -45,12 +60,10 @@ class LogoImageData
             return new self($data, null, $mimeType, $width, $height, $logo->getPunchoutBackground());
         }
 
-        error_clear_last();
         $image = @imagecreatefromstring($data);
 
         if (!$image) {
-            $errorDetails = error_get_last()['message'] ?? 'invalid data';
-            throw new \Exception(sprintf('Unable to parse image data at path "%s": %s', $logo->getPath(), $errorDetails));
+            throw new \Exception(sprintf('Unable to parse image data at path "%s"', $logo->getPath()));
         }
 
         // No target width and height specified: use from original image
@@ -76,9 +89,10 @@ class LogoImageData
         return $this->data;
     }
 
-    public function getImage(): \GdImage
+    /** @return mixed */
+    public function getImage()
     {
-        if (!$this->image instanceof \GdImage) {
+        if (null === $this->image) {
             throw new \Exception('SVG Images have no image resource');
         }
 
@@ -112,7 +126,10 @@ class LogoImageData
 
     private static function detectMimeTypeFromUrl(string $url): string
     {
-        $headers = get_headers($url, true);
+        /** @var mixed $format */
+        $format = PHP_VERSION_ID >= 80000 ? true : 1;
+
+        $headers = get_headers($url, $format);
 
         if (!is_array($headers) || !isset($headers['Content-Type'])) {
             throw new \Exception(sprintf('Content type could not be determined for logo URL "%s"', $url));
@@ -127,12 +144,10 @@ class LogoImageData
             throw new \Exception('You need the ext-fileinfo extension to determine logo mime type');
         }
 
-        error_clear_last();
         $mimeType = @mime_content_type($path);
 
         if (!is_string($mimeType)) {
-            $errorDetails = error_get_last()['message'] ?? 'invalid data';
-            throw new \Exception(sprintf('Could not determine mime type: %s', $errorDetails));
+            throw new \Exception('Could not determine mime type');
         }
 
         if (!preg_match('#^image/#', $mimeType)) {

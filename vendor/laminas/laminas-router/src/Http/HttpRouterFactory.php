@@ -10,6 +10,7 @@ use Laminas\ServiceManager\FactoryInterface;
 use Laminas\ServiceManager\ServiceLocatorInterface;
 use Psr\Container\ContainerInterface;
 
+/** @psalm-suppress DeprecatedInterface */
 class HttpRouterFactory implements FactoryInterface
 {
     use RouterConfigTrait;

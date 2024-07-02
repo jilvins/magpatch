@@ -100,7 +100,7 @@ class Connection extends AbstractConnection
                 }
             }
 
-            return null;
+            return;
         };
 
         $hostname = $findParameterValue(['hostname', 'host']);

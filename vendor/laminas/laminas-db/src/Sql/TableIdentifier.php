@@ -2,6 +2,7 @@
 
 namespace Laminas\Db\Sql;
 
+use function get_class;
 use function gettype;
 use function is_callable;
 use function is_object;
@@ -25,7 +26,7 @@ class TableIdentifier
         if (! (is_string($table) || is_callable([$table, '__toString']))) {
             throw new Exception\InvalidArgumentException(sprintf(
                 '$table must be a valid table name, parameter of type %s given',
-                is_object($table) ? $table::class : gettype($table)
+                is_object($table) ? get_class($table) : gettype($table)
             ));
         }
 
@@ -41,7 +42,7 @@ class TableIdentifier
             if (! (is_string($schema) || is_callable([$schema, '__toString']))) {
                 throw new Exception\InvalidArgumentException(sprintf(
                     '$schema must be a valid schema name, parameter of type %s given',
-                    is_object($schema) ? $schema::class : gettype($schema)
+                    is_object($schema) ? get_class($schema) : gettype($schema)
                 ));
             }
 

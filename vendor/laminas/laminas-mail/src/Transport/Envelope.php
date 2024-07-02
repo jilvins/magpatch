@@ -6,10 +6,14 @@ use Laminas\Stdlib\AbstractOptions;
 
 class Envelope extends AbstractOptions
 {
-    /** @var string|null */
+    /**
+     * @var string|null
+     */
     protected $from;
 
-    /** @var string|null */
+    /**
+     * @var string|null
+     */
     protected $to;
 
     /**

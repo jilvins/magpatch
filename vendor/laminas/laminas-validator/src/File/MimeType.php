@@ -165,7 +165,7 @@ class MimeType extends AbstractValidator
             foreach ($this->magicFiles as $file) {
                 try {
                     $this->setMagicFile($file);
-                } catch (Exception\ExceptionInterface) {
+                } catch (Exception\ExceptionInterface $e) {
                     // suppressing errors which are thrown due to open_basedir restrictions
                     continue;
                 }

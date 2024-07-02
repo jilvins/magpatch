@@ -2,8 +2,6 @@
 
 namespace Laminas\Mvc\View\Http;
 
-use Exception;
-use Throwable;
 use Laminas\EventManager\AbstractListenerAggregate;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Response as HttpResponse;
@@ -154,6 +152,7 @@ class RouteNotFoundStrategy extends AbstractListenerAggregate
     /**
      * Create and return a 404 view model
      *
+     * @param  MvcEvent $e
      * @return void
      */
     public function prepareNotFoundViewModel(MvcEvent $e)
@@ -246,7 +245,7 @@ class RouteNotFoundStrategy extends AbstractListenerAggregate
         $exception = $e->getParam('exception', false);
 
         // @TODO clean up once PHP 7 requirement is enforced
-        if (! $exception instanceof Exception && ! $exception instanceof Throwable) {
+        if (! $exception instanceof \Exception && ! $exception instanceof \Throwable) {
             return;
         }
 

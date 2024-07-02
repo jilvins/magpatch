@@ -4,43 +4,24 @@ namespace Laminas\Mail;
 
 use Countable;
 use Iterator;
-use Laminas\Mail\Address\AddressInterface;
 use ReturnTypeWillChange;
 
-use function count;
-use function current;
-use function gettype;
-use function is_int;
-use function is_numeric;
-use function is_object;
-use function is_string;
-use function key;
-use function next;
-use function reset;
-use function sprintf;
-use function strtolower;
-use function var_export;
-
-/**
- * @implements Iterator<string, AddressInterface>
- * @final
- */
 class AddressList implements Countable, Iterator
 {
     /**
      * List of Address objects we're managing
      *
-     * @var array<string, AddressInterface>
+     * @var array
      */
     protected $addresses = [];
 
     /**
      * Add an address to the list
      *
-     * @param  string|AddressInterface $emailOrAddress
+     * @param  string|Address\AddressInterface $emailOrAddress
      * @param  null|string $name
      * @throws Exception\InvalidArgumentException
-     * @return $this
+     * @return AddressList
      */
     public function add($emailOrAddress, $name = null)
     {
@@ -48,12 +29,12 @@ class AddressList implements Countable, Iterator
             $emailOrAddress = $this->createAddress($emailOrAddress, $name);
         }
 
-        if (! $emailOrAddress instanceof AddressInterface) {
+        if (! $emailOrAddress instanceof Address\AddressInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects an email address or %s\Address object as its first argument; received "%s"',
                 __METHOD__,
                 __NAMESPACE__,
-                is_object($emailOrAddress) ? $emailOrAddress::class : gettype($emailOrAddress)
+                (is_object($emailOrAddress) ? get_class($emailOrAddress) : gettype($emailOrAddress))
             ));
         }
 
@@ -75,7 +56,7 @@ class AddressList implements Countable, Iterator
      *
      * @param  array $addresses
      * @throws Exception\RuntimeException
-     * @return $this
+     * @return AddressList
      */
     public function addMany(array $addresses)
     {
@@ -88,7 +69,7 @@ class AddressList implements Countable, Iterator
             if (! is_string($key)) {
                 throw new Exception\RuntimeException(sprintf(
                     'Invalid key type in provided addresses array ("%s")',
-                    is_object($key) ? $key::class : var_export($key, true)
+                    (is_object($key) ? get_class($key) : var_export($key, 1))
                 ));
             }
 
@@ -105,7 +86,7 @@ class AddressList implements Countable, Iterator
      * @param string $address
      * @param null|string $comment Comment associated with the address, if any.
      * @throws Exception\InvalidArgumentException
-     * @return $this
+     * @return AddressList
      */
     public function addFromString($address, $comment = null)
     {
@@ -116,7 +97,8 @@ class AddressList implements Countable, Iterator
     /**
      * Merge another address list into this one
      *
-     * @return $this
+     * @param  AddressList $addressList
+     * @return AddressList
      */
     public function merge(self $addressList)
     {
@@ -142,7 +124,7 @@ class AddressList implements Countable, Iterator
      * Get an address by email
      *
      * @param  string $email
-     * @return false|AddressInterface
+     * @return bool|Address\AddressInterface
      */
     public function get($email)
     {
@@ -185,10 +167,9 @@ class AddressList implements Countable, Iterator
     /**
      * Rewind iterator
      *
-     * @see addresses
-     *
-     * @return false|AddressInterface the value of the first addresses element, or false if the addresses is
+     * @return mixed the value of the first addresses element, or false if the addresses is
      * empty.
+     * @see addresses
      */
     #[ReturnTypeWillChange]
     public function rewind()
@@ -199,7 +180,7 @@ class AddressList implements Countable, Iterator
     /**
      * Return current item in iteration
      *
-     * @return AddressInterface
+     * @return Address
      */
     #[ReturnTypeWillChange]
     public function current()
@@ -221,10 +202,9 @@ class AddressList implements Countable, Iterator
     /**
      * Move to next item
      *
-     * @see addresses
-     *
-     * @return false|AddressInterface the addresses value in the next place that's pointed to by the
+     * @return mixed the addresses value in the next place that's pointed to by the
      * internal array pointer, or false if there are no more elements.
+     * @see addresses
      */
     #[ReturnTypeWillChange]
     public function next()
@@ -241,7 +221,7 @@ class AddressList implements Countable, Iterator
     public function valid()
     {
         $key = key($this->addresses);
-        return $key !== null && $key !== false;
+        return ($key !== null && $key !== false);
     }
 
     /**

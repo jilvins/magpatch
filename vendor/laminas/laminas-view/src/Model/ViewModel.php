@@ -14,6 +14,7 @@ use Traversable;
 
 use function array_key_exists;
 use function count;
+use function get_class;
 use function gettype;
 use function is_array;
 use function is_object;
@@ -206,7 +207,7 @@ class ViewModel implements ModelInterface, ClearableModelInterface, RetrievableC
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s: expects an array, or Traversable argument; received "%s"',
                 __METHOD__,
-                is_object($options) ? $options::class : gettype($options)
+                is_object($options) ? get_class($options) : gettype($options)
             ));
         }
 
@@ -286,7 +287,7 @@ class ViewModel implements ModelInterface, ClearableModelInterface, RetrievableC
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s: expects an array, or Traversable argument; received "%s"',
                 __METHOD__,
-                is_object($variables) ? $variables::class : gettype($variables)
+                is_object($variables) ? get_class($variables) : gettype($variables)
             ));
         }
 

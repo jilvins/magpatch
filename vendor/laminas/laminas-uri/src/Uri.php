@@ -10,6 +10,7 @@ use function array_intersect_assoc;
 use function array_pop;
 use function array_unshift;
 use function explode;
+use function get_class;
 use function gettype;
 use function http_build_query;
 use function implode;
@@ -174,7 +175,7 @@ class Uri implements UriInterface
         } elseif ($uri !== null) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expecting a string or a URI object, received "%s"',
-                is_object($uri) ? $uri::class : gettype($uri)
+                is_object($uri) ? get_class($uri) : gettype($uri)
             ));
         }
     }
@@ -1002,7 +1003,7 @@ class Uri implements UriInterface
         if (! is_string($userInfo)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expecting a string, got %s',
-                is_object($userInfo) ? $userInfo::class : gettype($userInfo)
+                is_object($userInfo) ? get_class($userInfo) : gettype($userInfo)
             ));
         }
 
@@ -1030,7 +1031,7 @@ class Uri implements UriInterface
         if (! is_string($path)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expecting a string, got %s',
-                is_object($path) ? $path::class : gettype($path)
+                is_object($path) ? get_class($path) : gettype($path)
             ));
         }
 
@@ -1059,7 +1060,7 @@ class Uri implements UriInterface
         if (! is_string($input)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expecting a string, got %s',
-                is_object($input) ? $input::class : gettype($input)
+                is_object($input) ? get_class($input) : gettype($input)
             ));
         }
 
@@ -1091,7 +1092,7 @@ class Uri implements UriInterface
         if (! is_string($uriString)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expecting a string, got %s',
-                is_object($uriString) ? $uriString::class : gettype($uriString)
+                is_object($uriString) ? get_class($uriString) : gettype($uriString)
             ));
         }
 

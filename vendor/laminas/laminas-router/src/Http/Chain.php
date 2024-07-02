@@ -16,16 +16,13 @@ use function array_diff_key;
 use function array_flip;
 use function array_key_last;
 use function array_reverse;
-use function assert;
 use function is_array;
-use function is_bool;
 use function method_exists;
 use function sprintf;
 use function strlen;
 
 /**
- * @template TRoute of RouteInterface
- * @template-extends TreeRouteStack<TRoute>
+ * Chain route.
  */
 class Chain extends TreeRouteStack implements RouteInterface
 {
@@ -46,17 +43,14 @@ class Chain extends TreeRouteStack implements RouteInterface
     /**
      * Create a new part route.
      *
-     * @param array                            $routes
-     * @param RoutePluginManager<TRoute>       $routePlugins
-     * @param ArrayObject<string, TRoute>|null $prototypes
+     * @param  array              $routes
      */
     public function __construct(array $routes, RoutePluginManager $routePlugins, ?ArrayObject $prototypes = null)
     {
         $this->chainRoutes        = array_reverse($routes);
         $this->routePluginManager = $routePlugins;
-        /** @var PriorityList<string, TRoute> $this->routes */
-        $this->routes     = new PriorityList();
-        $this->prototypes = $prototypes;
+        $this->routes             = new PriorityList();
+        $this->prototypes         = $prototypes;
     }
 
     /**
@@ -134,7 +128,6 @@ class Chain extends TreeRouteStack implements RouteInterface
         $pathLength = strlen($uri->getPath());
 
         foreach ($this->routes as $route) {
-            assert($route instanceof RouteInterface);
             $subMatch = $route->match($request, $pathOffset, $options);
 
             if ($subMatch === null) {
@@ -175,8 +168,9 @@ class Chain extends TreeRouteStack implements RouteInterface
         $path         = '';
 
         foreach ($routes as $key => $route) {
+            /** @var RouteInterface $route */
             $chainOptions = $options;
-            $hasChild     = isset($options['has_child']) && is_bool($options['has_child']) && $options['has_child'];
+            $hasChild     = $options['has_child'] ?? false;
 
             $chainOptions['has_child'] = $hasChild || $key !== $lastRouteKey;
 

@@ -4,13 +4,8 @@ namespace Laminas\Mail\Storage;
 
 use ArrayAccess;
 use Countable;
-use Laminas\Mail\Storage\Message;
 use ReturnTypeWillChange;
 use SeekableIterator;
-
-use function str_starts_with;
-use function strtolower;
-use function substr;
 
 abstract class AbstractStorage implements
     ArrayAccess,
@@ -19,7 +14,6 @@ abstract class AbstractStorage implements
 {
     /**
      * class capabilities with default values
-     *
      * @var array
      */
     protected $has = [
@@ -33,22 +27,19 @@ abstract class AbstractStorage implements
 
     /**
      * current iteration position
-     *
      * @var int
      */
     protected $iterationPos = 0;
 
     /**
      * maximum iteration position (= message count)
-     *
      * @var null|int
      */
-    protected $iterationMax;
+    protected $iterationMax = null;
 
     /**
      * used message class, change it in an extended class to extend the returned message class
-     *
-     * @var class-string<Message\MessageInterface>
+     * @var string
      */
     protected $messageClass = Message::class;
 
@@ -63,13 +54,13 @@ abstract class AbstractStorage implements
      *
      * @param  string $var  property name
      * @throws Exception\InvalidArgumentException
-     * @return null|bool         supported or not
+     * @return bool         supported or not
      */
     public function __get($var)
     {
-        if (str_starts_with($var, 'has')) {
+        if (strpos($var, 'has') === 0) {
             $var = strtolower(substr($var, 3));
-            return $this->has[$var] ?? null;
+            return isset($this->has[$var]) ? $this->has[$var] : null;
         }
 
         throw new Exception\InvalidArgumentException($var . ' not found');
@@ -104,8 +95,8 @@ abstract class AbstractStorage implements
     /**
      * Get a message with headers and body
      *
-     * @param  int $id number of message
-     * @return Message\MessageInterface
+     * @param  $id int number of message
+     * @return Message
      */
     abstract public function getMessage($id);
 
@@ -158,7 +149,7 @@ abstract class AbstractStorage implements
     /**
      * delete a message from current box/folder
      *
-     * @param int $id message number
+     * @param $id
      */
     abstract public function removeMessage($id);
 
@@ -211,7 +202,7 @@ abstract class AbstractStorage implements
             if ($this->getMessage($id)) {
                 return true;
             }
-        } catch (Exception\ExceptionInterface) {
+        } catch (Exception\ExceptionInterface $e) {
         }
 
         return false;
@@ -221,7 +212,7 @@ abstract class AbstractStorage implements
      * ArrayAccess::offsetGet()
      *
      * @param    int $id
-     * @return Message message object
+     * @return   \Laminas\Mail\Storage\Message message object
      */
     #[ReturnTypeWillChange]
     public function offsetGet($id)
@@ -232,10 +223,12 @@ abstract class AbstractStorage implements
     /**
      * ArrayAccess::offsetSet()
      *
+     * @param mixed $id
+     * @param mixed $value
      * @throws Exception\RuntimeException
      */
     #[ReturnTypeWillChange]
-    public function offsetSet(mixed $id, mixed $value)
+    public function offsetSet($id, $value)
     {
         throw new Exception\RuntimeException('cannot write mail messages via array access');
     }

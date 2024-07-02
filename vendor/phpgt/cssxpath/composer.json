@@ -4,14 +4,14 @@
 	"type": "library",
 
 	"require": {
-		"php": ">=8.0"
+		"php": ">=7.3"
 	},
 
 	"require-dev": {
 		"ext-dom": "*",
 		"ext-libxml": "*",
-		"phpstan/phpstan": "^v1.8",
-		"phpunit/phpunit": "^v9.5"
+		"phpunit/phpunit": "^9.5",
+		"phpstan/phpstan": ">=0.12.42"
 	},
 
 	"license": "MIT",

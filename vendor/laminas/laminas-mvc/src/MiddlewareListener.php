@@ -2,8 +2,6 @@
 
 namespace Laminas\Mvc;
 
-use Throwable;
-use Exception;
 use Interop\Container\ContainerInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Laminas\EventManager\AbstractListenerAggregate;
@@ -40,6 +38,7 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Listen to the "dispatch" event
      *
+     * @param  MvcEvent $event
      * @return mixed
      */
     public function onDispatch(MvcEvent $event)
@@ -93,7 +92,7 @@ class MiddlewareListener extends AbstractListenerAggregate
                 $application->getServiceManager()->get('EventManager'),
                 $event
             ))->dispatch($request, $response);
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $caughtException = $ex;
         }
 
@@ -124,6 +123,9 @@ class MiddlewareListener extends AbstractListenerAggregate
     /**
      * Create a middleware pipe from the array spec given.
      *
+     * @param ContainerInterface $serviceLocator
+     * @param ResponseInterface $responsePrototype
+     * @param array $middlewaresToBePiped
      * @return MiddlewarePipe
      * @throws InvalidMiddlewareException
      */
@@ -139,7 +141,7 @@ class MiddlewareListener extends AbstractListenerAggregate
                 throw InvalidMiddlewareException::fromNull();
             }
 
-            $middlewareName = is_string($middlewareToBePiped) ? $middlewareToBePiped : $middlewareToBePiped::class;
+            $middlewareName = is_string($middlewareToBePiped) ? $middlewareToBePiped : get_class($middlewareToBePiped);
 
             if (is_string($middlewareToBePiped) && $serviceLocator->has($middlewareToBePiped)) {
                 $middlewareToBePiped = $serviceLocator->get($middlewareToBePiped);
@@ -158,6 +160,9 @@ class MiddlewareListener extends AbstractListenerAggregate
      *
      * @param  string $type
      * @param  string $middlewareName
+     * @param  MvcEvent $event
+     * @param  Application $application
+     * @param  \Exception $exception
      * @return mixed
      */
     protected function marshalInvalidMiddleware(
@@ -165,7 +170,7 @@ class MiddlewareListener extends AbstractListenerAggregate
         $middlewareName,
         MvcEvent $event,
         Application $application,
-        Exception $exception = null
+        \Exception $exception = null
     ) {
         $event->setName(MvcEvent::EVENT_DISPATCH_ERROR);
         $event->setError($type);

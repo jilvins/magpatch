@@ -42,7 +42,9 @@ use Zend\Validator\Sitemap\Lastmod;
 use Zend\Validator\Sitemap\Loc;
 use Zend\Validator\Sitemap\Priority;
 
-use function get_debug_type;
+use function get_class;
+use function gettype;
+use function is_object;
 use function method_exists;
 use function sprintf;
 
@@ -420,7 +422,6 @@ class ValidatorPluginManager extends AbstractPluginManager
         Isbn::class                      => InvokableFactory::class,
         IsCountable::class               => InvokableFactory::class,
         IsInstanceOf::class              => InvokableFactory::class,
-        IsJsonString::class              => InvokableFactory::class,
         LessThan::class                  => InvokableFactory::class,
         NotEmpty::class                  => InvokableFactory::class,
         I18nValidator\PhoneNumber::class => InvokableFactory::class,
@@ -571,9 +572,6 @@ class ValidatorPluginManager extends AbstractPluginManager
      * Validate plugin instance
      *
      * {@inheritDoc}
-     *
-     * @param mixed $instance
-     * @psalm-assert InstanceType $instance
      */
     public function validate($instance)
     {
@@ -582,7 +580,7 @@ class ValidatorPluginManager extends AbstractPluginManager
                 '%s expects only to create instances of %s; %s is invalid',
                 static::class,
                 $this->instanceOf,
-                get_debug_type($instance)
+                is_object($instance) ? get_class($instance) : gettype($instance)
             ));
         }
     }
@@ -592,17 +590,18 @@ class ValidatorPluginManager extends AbstractPluginManager
      *
      * Proxies to `validate()`.
      *
+     * @param mixed $plugin
      * @return void
      * @throws Exception\RuntimeException
      */
-    public function validatePlugin(mixed $plugin)
+    public function validatePlugin($plugin)
     {
         try {
             $this->validate($plugin);
         } catch (InvalidServiceException $e) {
             throw new Exception\RuntimeException(sprintf(
                 'Plugin of type %s is invalid; must implement %s',
-                get_debug_type($plugin),
+                is_object($plugin) ? get_class($plugin) : gettype($plugin),
                 ValidatorInterface::class
             ), $e->getCode(), $e);
         }

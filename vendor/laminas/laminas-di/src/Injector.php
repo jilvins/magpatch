@@ -110,14 +110,13 @@ class Injector implements InjectorInterface
     /**
      * Create the instance with auto wiring
      *
-     * @template T of object
-     * @param string|class-string<T> $name Class name or service alias
-     * @param array<mixed> $options Constructor parameters, keyed by the parameter name.
-     * @return T
+     * @param string               $name Class name or service alias
+     * @param array<string, mixed> $parameters Constructor parameters, keyed by the parameter name.
+     * @return object
      * @throws ClassNotFoundException
      * @throws RuntimeException
      */
-    public function create(string $name, array $options = [])
+    public function create(string $name, array $parameters = [])
     {
         if (in_array($name, $this->instantiationStack)) {
             throw new Exception\CircularDependencyException(sprintf(
@@ -130,7 +129,7 @@ class Injector implements InjectorInterface
         $this->instantiationStack[] = $name;
 
         try {
-            $instance = $this->createInstance($name, $options);
+            $instance = $this->createInstance($name, $parameters);
         } finally {
             array_pop($this->instantiationStack);
         }
@@ -143,10 +142,9 @@ class Injector implements InjectorInterface
      *
      * Any parameters provided will be used as constructor arguments only.
      *
-     * @template T of object
-     * @param string|class-string<T> $name The type name to instantiate.
-     * @param array<mixed> $params Constructor arguments, keyed by the parameter name.
-     * @return T
+     * @param string               $name The type name to instantiate.
+     * @param array<string, mixed> $params Constructor arguments, keyed by the parameter name.
+     * @return object
      * @throws InvalidCallbackException
      * @throws ClassNotFoundException
      */
@@ -172,10 +170,6 @@ class Injector implements InjectorInterface
 
         $callParameters = $this->resolveParameters($name, $params);
 
-        /**
-         * @psalm-suppress MixedMethodCall
-         * @psalm-var T
-         */
         return new $class(...$callParameters);
     }
 
@@ -219,21 +213,21 @@ class Injector implements InjectorInterface
      */
     private function resolveParameters(string $type, array $params = []): array
     {
-        $resolved    = $this->resolver->resolveParameters($type, $params);
-        $foundParams = [];
+        $resolved = $this->resolver->resolveParameters($type, $params);
+        $params   = [];
 
         foreach ($resolved as $injection) {
             try {
-                $foundParams[] = $this->getInjectionValue($injection);
+                $params[] = $this->getInjectionValue($injection);
             } catch (NotFoundExceptionInterface $containerException) {
                 throw new Exception\UndefinedReferenceException(
                     $containerException->getMessage(),
-                    (int) $containerException->getCode(),
+                    $containerException->getCode(),
                     $containerException
                 );
             }
         }
 
-        return $foundParams;
+        return $params;
     }
 }

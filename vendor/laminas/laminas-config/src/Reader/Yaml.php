@@ -83,7 +83,6 @@ class Yaml implements ReaderInterface
      * fromFile(): defined by Reader interface.
      *
      * @see    ReaderInterface::fromFile()
-     *
      * @param  string $filename
      * @return array
      * @throws Exception\RuntimeException
@@ -115,7 +114,6 @@ class Yaml implements ReaderInterface
      * fromString(): defined by Reader interface.
      *
      * @see    ReaderInterface::fromString()
-     *
      * @param  string $string
      * @return array|bool
      * @throws Exception\RuntimeException

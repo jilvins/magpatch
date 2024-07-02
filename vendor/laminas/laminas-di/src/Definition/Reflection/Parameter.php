@@ -63,17 +63,17 @@ class Parameter implements ParameterInterface
      */
     public function getType(): ?string
     {
-        $type = $this->reflection->getType();
+        if ($this->reflection->hasType()) {
+            $type = $this->reflection->getType();
 
-        if (! $type) {
-            return null;
+            if ($type !== null && ! $type instanceof ReflectionNamedType) {
+                throw UnsupportedReflectionTypeException::fromUnionOrIntersectionType($type);
+            }
+
+            return $type->getName();
         }
 
-        if (! $type instanceof ReflectionNamedType) {
-            throw UnsupportedReflectionTypeException::fromUnionOrIntersectionType($type);
-        }
-
-        return $type->getName();
+        return null;
     }
 
     /**
@@ -95,16 +95,16 @@ class Parameter implements ParameterInterface
      */
     public function isBuiltin(): bool
     {
-        $type = $this->reflection->getType();
+        if ($this->reflection->hasType()) {
+            $type = $this->reflection->getType();
 
-        if (! $type) {
-            return false;
+            if ($type !== null && ! $type instanceof ReflectionNamedType) {
+                throw UnsupportedReflectionTypeException::fromUnionOrIntersectionType($type);
+            }
+
+            return $type !== null ? $type->isBuiltin() : false;
         }
 
-        if (! $type instanceof ReflectionNamedType) {
-            throw UnsupportedReflectionTypeException::fromUnionOrIntersectionType($type);
-        }
-
-        return $type->isBuiltin();
+        return false;
     }
 }

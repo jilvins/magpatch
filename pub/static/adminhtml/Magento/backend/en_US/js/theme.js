@@ -1,0 +1,1 @@
+/home/juris/Documents/magpatch/mgpt/my-app/vendor/magento/theme-adminhtml-backend/web/js/theme.js

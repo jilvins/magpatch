@@ -2,7 +2,6 @@
 
 namespace Laminas\Mvc\View\Http;
 
-use Laminas\View\Model\ModelInterface;
 use ArrayAccess;
 use Laminas\EventManager\AbstractListenerAggregate;
 use Laminas\EventManager\EventManagerInterface;
@@ -163,7 +162,7 @@ class ViewManager extends AbstractListenerAggregate
     /**
      * Configures the MvcEvent view model to ensure it has the template injected
      *
-     * @return ModelInterface
+     * @return \Laminas\View\Model\ModelInterface
      */
     public function getViewModel()
     {

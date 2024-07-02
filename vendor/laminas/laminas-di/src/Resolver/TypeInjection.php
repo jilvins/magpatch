@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Laminas\Di\Resolver;
 
 use Psr\Container\ContainerInterface;
-use Stringable;
 
 use function trigger_error;
 use function var_export;
@@ -15,17 +14,19 @@ use const E_USER_DEPRECATED;
 /**
  * Wrapper for types that should be looked up for injection
  */
-final class TypeInjection implements InjectionInterface, Stringable
+final class TypeInjection implements InjectionInterface
 {
+    /**
+     * Holds the type name to look up
+     */
+    private string $type;
+
     /**
      * Constructor
      */
-    public function __construct(
-        /**
-         * Holds the type name to look up
-         */
-        private string $type
-    ) {
+    public function __construct(string $type)
+    {
+        $this->type = $type;
     }
 
     public function export(): string

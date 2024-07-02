@@ -114,7 +114,7 @@ class Connection extends AbstractConnection
                 }
             }
 
-            return null;
+            return;
         };
 
         $database     = $findParameterValue(['database', 'db']);

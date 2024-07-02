@@ -8,15 +8,18 @@ use Endroid\QrCode\Label\LabelInterface;
 
 class LabelImageData
 {
-    private function __construct(
-        private int $width,
-        private int $height
-    ) {
+    private int $width;
+    private int $height;
+
+    private function __construct(int $width, int $height)
+    {
+        $this->width = $width;
+        $this->height = $height;
     }
 
     public static function createForLabel(LabelInterface $label): self
     {
-        if (str_contains($label->getText(), "\n")) {
+        if (false !== strpos($label->getText(), "\n")) {
             throw new \Exception('Label does not support line breaks');
         }
 

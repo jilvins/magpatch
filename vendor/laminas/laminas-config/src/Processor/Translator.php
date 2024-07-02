@@ -8,19 +8,26 @@ use Laminas\I18n\Translator\Translator as LaminasTranslator;
 
 class Translator implements ProcessorInterface
 {
-    /** @var LaminasTranslator */
+    /**
+     * @var LaminasTranslator
+     */
     protected $translator;
 
-    /** @var string|null */
-    protected $locale;
+    /**
+     * @var string|null
+     */
+    protected $locale = null;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $textDomain = 'default';
 
     /**
      * Translator uses the supplied Laminas\I18n\Translator\Translator to find
      * and translate language strings in config.
      *
+     * @param LaminasTranslator $translator
      * @param string $textDomain
      * @param string|null $locale
      */
@@ -32,6 +39,7 @@ class Translator implements ProcessorInterface
     }
 
     /**
+     * @param LaminasTranslator $translator
      * @return self
      */
     public function setTranslator(LaminasTranslator $translator)
@@ -87,6 +95,7 @@ class Translator implements ProcessorInterface
     /**
      * Process
      *
+     * @param  Config $config
      * @return Config
      * @throws Exception\InvalidArgumentException
      */
@@ -113,7 +122,7 @@ class Translator implements ProcessorInterface
     /**
      * Process a single value
      *
-     * @param string $value
+     * @param $value
      * @return string
      */
     public function processValue($value)

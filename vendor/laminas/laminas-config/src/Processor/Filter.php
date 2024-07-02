@@ -8,11 +8,15 @@ use Laminas\Filter\FilterInterface as LaminasFilter;
 
 class Filter implements ProcessorInterface
 {
-    /** @var LaminasFilter */
+    /**
+     * @var LaminasFilter
+     */
     protected $filter;
 
     /**
      * Filter all config values using the supplied Laminas\Filter
+     *
+     * @param LaminasFilter $filter
      */
     public function __construct(LaminasFilter $filter)
     {
@@ -20,6 +24,7 @@ class Filter implements ProcessorInterface
     }
 
     /**
+     * @param  LaminasFilter $filter
      * @return self
      */
     public function setFilter(LaminasFilter $filter)
@@ -39,6 +44,7 @@ class Filter implements ProcessorInterface
     /**
      * Process
      *
+     * @param  Config $config
      * @return Config
      * @throws Exception\InvalidArgumentException
      */

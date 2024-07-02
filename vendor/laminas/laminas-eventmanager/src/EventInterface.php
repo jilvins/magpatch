@@ -6,39 +6,34 @@ use ArrayAccess;
 
 /**
  * Representation of an event
- *
- * @template-covariant TTarget of object|string|null
- * @template-covariant TParams of array|ArrayAccess|object
  */
 interface EventInterface
 {
     /**
      * Get event name
      *
-     * @return string|null
+     * @return string
      */
     public function getName();
 
     /**
      * Get target/context from which event was triggered
      *
-     * @return object|string|null
-     * @psalm-return TTarget
+     * @return null|string|object
      */
     public function getTarget();
 
     /**
      * Get parameters passed to the event
      *
-     * @return array|ArrayAccess|object
-     * @psalm-return TParams
+     * @return array|ArrayAccess
      */
     public function getParams();
 
     /**
      * Get a single parameter by name
      *
-     * @param  string|int $name
+     * @param  string $name
      * @param  mixed $default Default value to return if parameter does not exist
      * @return mixed
      */
@@ -55,21 +50,15 @@ interface EventInterface
     /**
      * Set the event target/context
      *
-     * @param object|string|null $target
-     * @template NewTTarget of object|string|null
-     * @psalm-param NewTTarget $target
-     * @psalm-this-out static&self<NewTTarget, TParams>
+     * @param  null|string|object $target
      * @return void
      */
     public function setTarget($target);
 
     /**
-     * Set event parameters. Overwrites parameters.
+     * Set event parameters
      *
-     * @param array|ArrayAccess|object $params
-     * @template NewTParams of array|ArrayAccess|object
-     * @psalm-param NewTParams $params
-     * @psalm-this-out static&self<TTarget, NewTParams>
+     * @param  array|ArrayAccess $params
      * @return void
      */
     public function setParams($params);
@@ -77,7 +66,7 @@ interface EventInterface
     /**
      * Set a single parameter by key
      *
-     * @param  string|int $name
+     * @param  string $name
      * @param  mixed $value
      * @return void
      */

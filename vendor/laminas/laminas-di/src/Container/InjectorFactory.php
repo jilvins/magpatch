@@ -8,6 +8,7 @@ use Laminas\Di\ConfigInterface;
 use Laminas\Di\Injector;
 use Laminas\Di\InjectorInterface;
 use Psr\Container\ContainerInterface;
+use Zend\Di\ConfigInterface as LegacyConfigInterace;
 
 /**
  * Implements the DependencyInjector service factory for laminas-servicemanager
@@ -20,9 +21,8 @@ class InjectorFactory
             return $container->get(ConfigInterface::class);
         }
 
-        if ($container->has('Zend\Di\ConfigInterface')) {
-            /** @psalm-var ConfigInterface */
-            return $container->get('Zend\Di\ConfigInterface');
+        if ($container->has(LegacyConfigInterace::class)) {
+            return $container->get(LegacyConfigInterace::class);
         }
 
         return (new ConfigFactory())->create($container);

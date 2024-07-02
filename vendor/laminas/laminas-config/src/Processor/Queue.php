@@ -11,6 +11,7 @@ class Queue extends PriorityQueue implements ProcessorInterface
     /**
      * Process the whole config structure with each parser in the queue.
      *
+     * @param  Config $config
      * @return Config
      * @throws Exception\InvalidArgumentException
      */
@@ -21,7 +22,7 @@ class Queue extends PriorityQueue implements ProcessorInterface
         }
 
         foreach ($this as $parser) {
-            /** @var ProcessorInterface $parser */
+            /** @var $parser ProcessorInterface */
             $parser->process($config);
         }
 
@@ -37,7 +38,7 @@ class Queue extends PriorityQueue implements ProcessorInterface
     public function processValue($value)
     {
         foreach ($this as $parser) {
-            /** @var ProcessorInterface $parser */
+            /** @var $parser ProcessorInterface */
             $value = $parser->processValue($value);
         }
 

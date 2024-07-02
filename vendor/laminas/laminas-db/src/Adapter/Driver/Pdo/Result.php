@@ -201,11 +201,9 @@ class Result implements Iterator, ResultInterface
                 'This result is a forward only result set, calling rewind() after moving forward is not supported'
             );
         }
-        if (! $this->currentComplete) {
-            $this->currentData     = $this->resource->fetch($this->fetchMode);
-            $this->currentComplete = true;
-        }
-        $this->position = 0;
+        $this->currentData     = $this->resource->fetch($this->fetchMode);
+        $this->currentComplete = true;
+        $this->position        = 0;
     }
 
     /**

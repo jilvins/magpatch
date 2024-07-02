@@ -20,6 +20,7 @@ use function class_implements;
 use function count;
 use function current;
 use function explode;
+use function get_class;
 use function gettype;
 use function implode;
 use function in_array;
@@ -159,7 +160,7 @@ class Headers implements Countable, Iterator
         if (! is_array($headers) && ! $headers instanceof Traversable) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expected array or Traversable; received "%s"',
-                is_object($headers) ? $headers::class : gettype($headers)
+                is_object($headers) ? get_class($headers) : gettype($headers)
             ));
         }
 

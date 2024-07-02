@@ -21,7 +21,6 @@ abstract class AbstractWriter implements WriterInterface
      * toFile(): defined by Writer interface.
      *
      * @see    WriterInterface::toFile()
-     *
      * @param  string  $filename
      * @param  mixed   $config
      * @param  bool $exclusiveLock
@@ -64,7 +63,6 @@ abstract class AbstractWriter implements WriterInterface
      * toString(): defined by Writer interface.
      *
      * @see    WriterInterface::toString()
-     *
      * @param  mixed   $config
      * @return string
      * @throws Exception\InvalidArgumentException

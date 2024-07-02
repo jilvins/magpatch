@@ -5,7 +5,6 @@ namespace Laminas\Validator;
 use Exception;
 use Laminas\Stdlib\ArrayUtils;
 use Laminas\Validator\Exception\InvalidArgumentException;
-use SensitiveParameter;
 use Traversable;
 
 use function array_key_exists;
@@ -20,8 +19,8 @@ use function in_array;
 use function is_array;
 use function is_callable;
 use function is_string;
-use function str_starts_with;
 use function strlen;
+use function strpos;
 use function strtoupper;
 
 class CreditCard extends AbstractValidator
@@ -356,19 +355,14 @@ class CreditCard extends AbstractValidator
         return $this;
     }
 
-    // The following rule is buggy for parameters attributes
-    // phpcs:disable SlevomatCodingStandard.TypeHints.ParameterTypeHintSpacing.NoSpaceBetweenTypeHintAndParameter
-
     /**
      * Returns true if and only if $value follows the Luhn algorithm (mod-10 checksum)
      *
      * @param  string $value
      * @return bool
      */
-    public function isValid(
-        #[SensitiveParameter]
-        $value
-    ) {
+    public function isValid($value)
+    {
         $this->setValue($value);
 
         if (! is_string($value)) {
@@ -387,7 +381,7 @@ class CreditCard extends AbstractValidator
         $foundl = false;
         foreach ($types as $type) {
             foreach ($this->cardType[$type] as $prefix) {
-                if (str_starts_with($value, (string) $prefix)) {
+                if (0 === strpos($value, (string) $prefix)) {
                     $foundp = true;
                     if (in_array($length, $this->cardLength[$type])) {
                         $foundl = true;
@@ -431,7 +425,7 @@ class CreditCard extends AbstractValidator
                     $this->error(self::SERVICE, $value);
                     return false;
                 }
-            } catch (Exception) {
+            } catch (Exception $e) {
                 $this->error(self::SERVICEFAILURE, $value);
                 return false;
             }
@@ -439,6 +433,4 @@ class CreditCard extends AbstractValidator
 
         return true;
     }
-
-    // phpcs:enable SlevomatCodingStandard.TypeHints.ParameterTypeHintSpacing.NoSpaceBetweenTypeHintAndParameter
 }

@@ -2,27 +2,21 @@
 
 namespace Laminas\Config;
 
-use interop\container\containerinterface;
+use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\AbstractPluginManager;
 use Laminas\ServiceManager\Exception\InvalidServiceException;
 use Laminas\ServiceManager\Factory\InvokableFactory;
-use Zend\Config\Reader\Ini;
-use Zend\Config\Reader\JavaProperties;
-use Zend\Config\Reader\Json;
-use Zend\Config\Reader\Xml;
-use Zend\Config\Reader\Yaml;
 
 use function array_merge_recursive;
+use function get_class;
 use function gettype;
 use function is_object;
 use function sprintf;
 
 class ReaderPluginManager extends AbstractPluginManager
 {
-    /** @var string */
     protected $instanceOf = Reader\ReaderInterface::class;
 
-    /** @var string[] */
     protected $aliases = [
         'ini'            => Reader\Ini::class,
         'Ini'            => Reader\Ini::class,
@@ -37,21 +31,20 @@ class ReaderPluginManager extends AbstractPluginManager
         'JavaProperties' => Reader\JavaProperties::class,
 
         // Legacy Zend Framework aliases
-        Ini::class            => Reader\Ini::class,
-        Json::class           => Reader\Json::class,
-        Xml::class            => Reader\Xml::class,
-        Yaml::class           => Reader\Yaml::class,
-        JavaProperties::class => Reader\JavaProperties::class,
+        \Zend\Config\Reader\Ini::class => Reader\Ini::class,
+        \Zend\Config\Reader\Json::class => Reader\Json::class,
+        \Zend\Config\Reader\Xml::class => Reader\Xml::class,
+        \Zend\Config\Reader\Yaml::class => Reader\Yaml::class,
+        \Zend\Config\Reader\JavaProperties::class => Reader\JavaProperties::class,
 
         // v2 normalized FQCNs
-        'zendconfigreaderini'            => Reader\Ini::class,
-        'zendconfigreaderjson'           => Reader\Json::class,
-        'zendconfigreaderxml'            => Reader\Xml::class,
-        'zendconfigreaderyaml'           => Reader\Yaml::class,
+        'zendconfigreaderini' => Reader\Ini::class,
+        'zendconfigreaderjson' => Reader\Json::class,
+        'zendconfigreaderxml' => Reader\Xml::class,
+        'zendconfigreaderyaml' => Reader\Yaml::class,
         'zendconfigreaderjavaproperties' => Reader\JavaProperties::class,
     ];
 
-    /** @var string[] */
     protected $factories = [
         Reader\Ini::class            => InvokableFactory::class,
         Reader\Json::class           => InvokableFactory::class,
@@ -81,9 +74,9 @@ class ReaderPluginManager extends AbstractPluginManager
         if (! $instance instanceof $this->instanceOf) {
             throw new InvalidServiceException(sprintf(
                 '%s can only create instances of %s; %s is invalid',
-                static::class,
+                get_class($this),
                 $this->instanceOf,
-                is_object($instance) ? $instance::class : gettype($instance)
+                (is_object($instance) ? get_class($instance) : gettype($instance))
             ));
         }
     }
@@ -105,7 +98,7 @@ class ReaderPluginManager extends AbstractPluginManager
         }
     }
 
-    public function __construct(containerinterface $container, array $config = [])
+    public function __construct(ContainerInterface $container, array $config = [])
     {
         $config = array_merge_recursive(['aliases' => $this->aliases], $config);
         parent::__construct($container, $config);

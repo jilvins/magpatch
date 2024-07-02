@@ -601,12 +601,18 @@ class Code128 extends AbstractAdapter
     protected function getCodingSet($value)
     {
         $value = $this->getUtf8StringWrapper()->substr($value, 0, 1);
-        return match ($value) {
-            '‡' => 'A',
-            'ˆ' => 'B',
-            '‰' => 'C',
-            default => '',
-        };
+        switch ($value) {
+            case '‡':
+                return 'A';
+
+            case 'ˆ':
+                return 'B';
+
+            case '‰':
+                return 'C';
+        }
+
+        return '';
     }
 
     /**

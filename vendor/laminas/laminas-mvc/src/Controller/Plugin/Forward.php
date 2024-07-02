@@ -2,8 +2,6 @@
 
 namespace Laminas\Mvc\Controller\Plugin;
 
-use Traversable;
-use Laminas\Mvc\Exception\DomainException;
 use Laminas\EventManager\SharedEventManagerInterface as SharedEvents;
 use Laminas\Mvc\Controller\ControllerManager;
 use Laminas\Mvc\Exception;
@@ -14,6 +12,11 @@ use Laminas\Stdlib\CallbackHandler;
 
 class Forward extends AbstractPlugin
 {
+    /**
+     * @var ControllerManager
+     */
+    protected $controllers;
+
     /**
      * @var MvcEvent
      */
@@ -34,8 +37,12 @@ class Forward extends AbstractPlugin
      */
     protected $listenersToDetach = null;
 
-    public function __construct(protected ControllerManager $controllers)
+    /**
+     * @param ControllerManager $controllers
+     */
+    public function __construct(ControllerManager $controllers)
     {
+        $this->controllers = $controllers;
     }
 
     /**
@@ -118,7 +125,7 @@ class Forward extends AbstractPlugin
         }
 
         if ($this->numNestedForwards > $this->maxNestedForwards) {
-            throw new DomainException(
+            throw new Exception\DomainException(
                 "Circular forwarding detected: greater than $this->maxNestedForwards nested forwards"
             );
         }
@@ -229,9 +236,9 @@ class Forward extends AbstractPlugin
 
         $controller = $this->getController();
         if (! $controller instanceof InjectApplicationEventInterface) {
-            throw new DomainException(sprintf(
+            throw new Exception\DomainException(sprintf(
                 'Forward plugin requires a controller that implements InjectApplicationEventInterface; received %s',
-                (is_object($controller) ? $controller::class : var_export($controller, 1))
+                (is_object($controller) ? get_class($controller) : var_export($controller, 1))
             ));
         }
 
@@ -257,7 +264,7 @@ class Forward extends AbstractPlugin
      * @param string|int $id
      * @param string $event
      * @param SharedEvents $sharedEvents
-     * @return array|Traversable
+     * @return array|\Traversable
      */
     private function getSharedListenersById($id, $event, SharedEvents $sharedEvents)
     {

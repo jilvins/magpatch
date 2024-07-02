@@ -92,6 +92,7 @@ class RemoteAddr implements SessionValidator
     /**
      * Set list of trusted proxy addresses
      *
+     * @param  array $trustedProxies
      * @return void
      */
     public static function setTrustedProxies(array $trustedProxies)

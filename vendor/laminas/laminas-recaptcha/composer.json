@@ -8,29 +8,30 @@
     ],
     "homepage": "https://laminas.dev",
     "support": {
-        "issues": "https://github.com/laminas/laminas-recaptcha/issues",
-        "forum": "https://discourse.laminas.dev",
-        "chat": "https://laminas.dev/chat",
-        "source": "https://github.com/laminas/laminas-recaptcha",
         "docs": "https://docs.laminas.dev/laminas-recaptcha/",
-        "rss": "https://github.com/laminas/laminas-recaptcha/releases.atom"
+        "issues": "https://github.com/laminas/laminas-recaptcha/issues",
+        "source": "https://github.com/laminas/laminas-recaptcha",
+        "rss": "https://github.com/laminas/laminas-recaptcha/releases.atom",
+        "chat": "https://laminas.dev/chat",
+        "forum": "https://discourse.laminas.dev"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
     },
     "require": {
-        "php": "~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0",
+        "php": "^7.3 || ~8.0.0 || ~8.1.0",
         "ext-json": "*",
         "laminas/laminas-http": "^2.15",
-        "laminas/laminas-stdlib": "^3.10.1"
+        "laminas/laminas-json": "^3.3",
+        "laminas/laminas-stdlib": "^3.6"
     },
     "require-dev": {
-        "laminas/laminas-coding-standard": "~2.5.0",
-        "laminas/laminas-config": "^3.8",
-        "laminas/laminas-validator": "^2.29",
-        "phpunit/phpunit": "^9.5.27",
-        "psalm/plugin-phpunit": "^0.18.4",
-        "vimeo/psalm": "^5.4"
-    },
-    "conflict": {
-        "zendframework/zendservice-recaptcha": "*"
+        "laminas/laminas-coding-standard": "~2.3.0",
+        "laminas/laminas-config": "^3.7",
+        "laminas/laminas-validator": "^2.15",
+        "phpunit/phpunit": "^9.5.4"
     },
     "suggest": {
         "laminas/laminas-validator": "~2.0, if using ReCaptcha's Mailhide API"
@@ -45,16 +46,6 @@
             "LaminasTest\\ReCaptcha\\": "test/"
         }
     },
-    "config": {
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        },
-        "platform": {
-            "php": "8.0.99"
-        },
-        "sort-packages": true
-    },
-    "extra": {},
     "scripts": {
         "check": [
             "@cs-check",
@@ -64,5 +55,8 @@
         "cs-fix": "phpcbf",
         "test": "phpunit --colors=always",
         "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
+    },
+    "conflict": {
+        "zendframework/zendservice-recaptcha": "*"
     }
 }

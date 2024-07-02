@@ -6,16 +6,12 @@ namespace Laminas\Di\CodeGenerator;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @template T extends object
- */
 interface FactoryInterface
 {
     /**
      * Create an instance
      *
-     * @param array<mixed> $options
-     * @return T
+     * @return object
      */
     public function create(ContainerInterface $container, array $options);
 }

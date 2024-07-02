@@ -16,6 +16,7 @@ use Laminas\ServiceManager\ServiceManager;
 
 use function end;
 use function explode;
+use function get_class;
 
 class LocatorRegistrationListener extends AbstractListener implements
     ListenerAggregateInterface
@@ -57,8 +58,8 @@ class LocatorRegistrationListener extends AbstractListener implements
         $events->attach(
             Application::class,
             ModuleManager::EVENT_BOOTSTRAP,
-            static function (MvcEvent $e) use ($moduleManager): void {
-                $moduleClassName      = $moduleManager::class;
+            function (MvcEvent $e) use ($moduleManager) {
+                $moduleClassName      = get_class($moduleManager);
                 $moduleClassNameArray = explode('\\', $moduleClassName);
                 $moduleClassNameAlias = end($moduleClassNameArray);
                 $application          = $e->getApplication();
@@ -94,7 +95,7 @@ class LocatorRegistrationListener extends AbstractListener implements
         $services = $application->getServiceManager();
 
         foreach ($this->modules as $module) {
-            $moduleClassName = $module::class;
+            $moduleClassName = get_class($module);
             if (! $services->has($moduleClassName)) {
                 $services->setService($moduleClassName, $module);
             }

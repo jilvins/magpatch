@@ -3,11 +3,7 @@
 namespace Laminas\Session\Storage;
 
 /**
- * Session storage in $_SESSION'
- *
- * @template TKey of array-key
- * @template TValue
- * @template-extends AbstractSessionArrayStorage<TKey, TValue>
+ * Session storage in $_SESSION
  */
 class SessionArrayStorage extends AbstractSessionArrayStorage
 {
