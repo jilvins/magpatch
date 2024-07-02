@@ -2,7 +2,6 @@
 
 namespace Laminas\Mvc\Service;
 
-use Laminas\Mvc\View\Http\DefaultRenderingStrategy;
 use Interop\Container\ContainerInterface;
 use Laminas\ModuleManager\Listener\ServiceListener;
 use Laminas\ModuleManager\Listener\ServiceListenerInterface;
@@ -17,12 +16,12 @@ class ServiceListenerFactory implements FactoryInterface
     /**
      * @var string
      */
-    public const MISSING_KEY_ERROR = 'Invalid service listener options detected, %s array must contain %s key.';
+    const MISSING_KEY_ERROR = 'Invalid service listener options detected, %s array must contain %s key.';
 
     /**
      * @var string
      */
-    public const VALUE_TYPE_ERROR = 'Invalid service listener options detected, %s must be a string, %s given.';
+    const VALUE_TYPE_ERROR = 'Invalid service listener options detected, %s must be a string, %s given.';
 
     /**
      * Default mvc-related service configuration -- can be overridden by modules.
@@ -35,7 +34,7 @@ class ServiceListenerFactory implements FactoryInterface
             'Config'                                       => 'config',
             'configuration'                                => 'config',
             'Configuration'                                => 'config',
-            'HttpDefaultRenderingStrategy'                 => DefaultRenderingStrategy::class,
+            'HttpDefaultRenderingStrategy'                 => View\Http\DefaultRenderingStrategy::class,
             'MiddlewareListener'                           => 'Laminas\Mvc\MiddlewareListener',
             'request'                                      => 'Request',
             'response'                                     => 'Response',
@@ -72,7 +71,7 @@ class ServiceListenerFactory implements FactoryInterface
             'Request'                                   => 'Laminas\Mvc\Service\RequestFactory',
             'Response'                                  => 'Laminas\Mvc\Service\ResponseFactory',
             'ViewHelperManager'                         => 'Laminas\Mvc\Service\ViewHelperManagerFactory',
-            DefaultRenderingStrategy::class   => HttpDefaultRenderingStrategyFactory::class,
+            View\Http\DefaultRenderingStrategy::class   => HttpDefaultRenderingStrategyFactory::class,
             'ViewFeedStrategy'                          => 'Laminas\Mvc\Service\ViewFeedStrategyFactory',
             'ViewJsonStrategy'                          => 'Laminas\Mvc\Service\ViewJsonStrategyFactory',
             'ViewManager'                               => 'Laminas\Mvc\Service\ViewManagerFactory',
@@ -144,6 +143,7 @@ class ServiceListenerFactory implements FactoryInterface
      * Validate and inject plugin manager options into the service listener.
      *
      * @param array $options
+     * @param ServiceListenerInterface $serviceListener
      * @throws ServiceListenerInterface for invalid $options types
      */
     private function injectServiceListenerOptions($options, ServiceListenerInterface $serviceListener)
@@ -151,7 +151,7 @@ class ServiceListenerFactory implements FactoryInterface
         if (! is_array($options)) {
             throw new ServiceNotCreatedException(sprintf(
                 'The value of service_listener_options must be an array, %s given.',
-                (get_debug_type($options))
+                (is_object($options) ? get_class($options) : gettype($options))
             ));
         }
 
@@ -183,7 +183,7 @@ class ServiceListenerFactory implements FactoryInterface
             throw new ServiceNotCreatedException(sprintf(
                 'Plugin manager configuration for "%s" is invalid; must be an array, received "%s"',
                 $name,
-                (get_debug_type($options))
+                (is_object($options) ? get_class($options) : gettype($options))
             ));
         }
 

@@ -13,11 +13,15 @@ use Laminas\Mail\Message;
  */
 class InMemory implements TransportInterface
 {
-    /** @var null|Message */
+    /**
+     * @var null|Message
+     */
     protected $lastMessage;
 
     /**
      * Takes the last message and saves it for testing.
+     *
+     * @param Message $message
      */
     public function send(Message $message)
     {

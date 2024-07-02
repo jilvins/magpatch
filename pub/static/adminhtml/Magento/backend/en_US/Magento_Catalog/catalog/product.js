@@ -1,0 +1,1 @@
+/home/juris/Documents/magpatch/mgpt/my-app/vendor/magento/module-catalog/view/adminhtml/web/catalog/product.js

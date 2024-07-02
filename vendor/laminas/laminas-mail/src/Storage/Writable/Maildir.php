@@ -5,63 +5,9 @@ namespace Laminas\Mail\Storage\Writable;
 use Laminas\Mail\Exception as MailException;
 use Laminas\Mail\Storage;
 use Laminas\Mail\Storage\Exception as StorageException;
-use Laminas\Mail\Storage\Exception\ExceptionInterface;
-use Laminas\Mail\Storage\Exception\InvalidArgumentException;
-use Laminas\Mail\Storage\Exception\RuntimeException;
 use Laminas\Mail\Storage\Folder;
 use Laminas\Stdlib\ErrorHandler;
 use RecursiveIteratorIterator;
-
-use function array_flip;
-use function array_keys;
-use function array_search;
-use function array_values;
-use function closedir;
-use function copy;
-use function dirname;
-use function explode;
-use function fclose;
-use function fgets;
-use function file_exists;
-use function file_put_contents;
-use function filemtime;
-use function filesize;
-use function fopen;
-use function fread;
-use function fwrite;
-use function get_resource_type;
-use function getmypid;
-use function implode;
-use function is_array;
-use function is_dir;
-use function is_file;
-use function is_numeric;
-use function is_resource;
-use function link;
-use function microtime;
-use function mkdir;
-use function opendir;
-use function php_uname;
-use function readdir;
-use function rename;
-use function rmdir;
-use function rtrim;
-use function sleep;
-use function str_contains;
-use function str_starts_with;
-use function stream_copy_to_stream;
-use function strlen;
-use function strpos;
-use function strrpos;
-use function strtok;
-use function substr;
-use function time;
-use function trim;
-use function unlink;
-
-use const DIRECTORY_SEPARATOR;
-use const E_WARNING;
-use const FILE_APPEND;
 
 class Maildir extends Folder\Maildir implements WritableInterface
 {
@@ -80,8 +26,8 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * If the given dir is already a valid maildir this will not fail.
      *
      * @param string $dir directory for the new maildir (may already exist)
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
+     * @throws \Laminas\Mail\Storage\Exception\InvalidArgumentException
      */
     public static function initMaildir($dir)
     {
@@ -123,8 +69,8 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * Additional parameters are (see parent for more):
      *   - create if true a new maildir is create if none exists
      *
-     * @param  array|object $params mail reader specific parameters
-     * @throws ExceptionInterface
+     * @param  $params array mail reader specific parameters
+     * @throws \Laminas\Mail\Storage\Exception\ExceptionInterface
      */
     public function __construct($params)
     {
@@ -132,8 +78,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
             $params = (object) $params;
         }
 
-        if (
-            ! empty($params->create)
+        if (! empty($params->create)
             && isset($params->dirname)
             && ! file_exists($params->dirname . DIRECTORY_SEPARATOR . 'cur')
         ) {
@@ -150,8 +95,8 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * may be used as parent or which chars may be used in the folder name
      *
      * @param   string                           $name         global name of folder, local name if $parentFolder is set
-     * @param string|Folder $parentFolder parent of new folder, else root folder is parent
-     * @throws RuntimeException
+     * @param   string|\Laminas\Mail\Storage\Folder $parentFolder parent of new folder, else root folder is parent
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      * @return  string only used internally (new created maildir)
      */
     public function createFolder($name, $parentFolder = null)
@@ -170,26 +115,25 @@ class Maildir extends Folder\Maildir implements WritableInterface
         $exists = null;
         try {
             $exists = $this->getFolders($folder);
-        } catch (MailException\ExceptionInterface) {
+        } catch (MailException\ExceptionInterface $e) {
             // ok
         }
         if ($exists) {
             throw new StorageException\RuntimeException('folder already exists');
         }
 
-        if (str_contains($folder, $this->delim . $this->delim)) {
+        if (strpos($folder, $this->delim . $this->delim) !== false) {
             throw new StorageException\RuntimeException('invalid name - folder parts may not be empty');
         }
 
-        if (str_starts_with($folder, 'INBOX' . $this->delim)) {
+        if (strpos($folder, 'INBOX' . $this->delim) === 0) {
             $folder = substr($folder, 6);
         }
 
         $fulldir = $this->rootdir . '.' . $folder;
 
         // check if we got tricked and would create a dir outside of the rootdir or not as direct child
-        if (
-            str_contains($folder, DIRECTORY_SEPARATOR) || str_contains($folder, '/')
+        if (strpos($folder, DIRECTORY_SEPARATOR) !== false || strpos($folder, '/') !== false
             || dirname($fulldir) . DIRECTORY_SEPARATOR != $this->rootdir
         ) {
             throw new StorageException\RuntimeException('invalid name - no directory separator allowed in folder name');
@@ -202,7 +146,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
             $parent = substr($folder, 0, strrpos($folder, $this->delim));
             try {
                 $this->getFolders($parent);
-            } catch (MailException\ExceptionInterface) {
+            } catch (MailException\ExceptionInterface $e) {
                 // does not - create parent folder
                 $this->createFolder($parent);
             }
@@ -232,7 +176,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * remove a folder
      *
      * @param  string|Folder $name      name or instance of folder
-     * @throws RuntimeException
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      */
     public function removeFolder($name)
     {
@@ -247,7 +191,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
         }
 
         $name = trim($name, $this->delim);
-        if (str_starts_with($name, 'INBOX' . $this->delim)) {
+        if (strpos($name, 'INBOX' . $this->delim) === 0) {
             $name = substr($name, 6);
         }
 
@@ -305,9 +249,9 @@ class Maildir extends Folder\Maildir implements WritableInterface
      *
      * The new name has the same restrictions as in createFolder()
      *
-     * @param string|Folder $oldName name or instance of folder
+     * @param  string|\Laminas\Mail\Storage\Folder $oldName name or instance of folder
      * @param  string                           $newName new global name of folder
-     * @throws RuntimeException
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      */
     public function renameFolder($oldName, $newName)
     {
@@ -318,16 +262,16 @@ class Maildir extends Folder\Maildir implements WritableInterface
         }
 
         $oldName = trim($oldName, $this->delim);
-        if (str_starts_with($oldName, 'INBOX' . $this->delim)) {
+        if (strpos($oldName, 'INBOX' . $this->delim) === 0) {
             $oldName = substr($oldName, 6);
         }
 
         $newName = trim($newName, $this->delim);
-        if (str_starts_with($newName, 'INBOX' . $this->delim)) {
+        if (strpos($newName, 'INBOX' . $this->delim) === 0) {
             $newName = substr($newName, 6);
         }
 
-        if (str_starts_with($newName, $oldName . $this->delim)) {
+        if (strpos($newName, $oldName . $this->delim) === 0) {
             throw new StorageException\RuntimeException('new folder cannot be a child of old folder');
         }
 
@@ -381,7 +325,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
      */
     protected function createUniqueId()
     {
-        $id  = '';
+        $id = '';
         $id .= microtime(true);
         $id .= '.' . getmypid();
         $id .= '.' . php_uname('n');
@@ -396,7 +340,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * you should close the returned filehandle!
      *
      * @param   string $folder name of current folder without leading .
-     * @throws RuntimeException
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      * @return  array array('dirname' => dir of maildir folder, 'uniq' => unique id, 'filename' => name of create file
      *                     'handle'  => file opened for writing)
      */
@@ -441,10 +385,10 @@ class Maildir extends Folder\Maildir implements WritableInterface
         }
 
         return [
-            'dirname'  => $this->rootdir . '.' . $folder,
-            'uniq'     => $uniq,
+            'dirname' => $this->rootdir . '.' . $folder,
+            'uniq' => $uniq,
             'filename' => $tmpdir . $uniq,
-            'handle'   => $fh,
+            'handle' => $fh,
         ];
     }
 
@@ -470,7 +414,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
             if (! isset($wantedFlags[$flag])) {
                 continue;
             }
-            $info        .= $char;
+            $info .= $char;
             $flags[$char] = $flag;
             unset($wantedFlags[$flag]);
         }
@@ -505,7 +449,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
             $folder = $this->currentFolder;
         }
 
-        if (! $folder instanceof Folder) {
+        if (! ($folder instanceof Folder)) {
             $folder = $this->getFolders($folder);
         }
 
@@ -528,7 +472,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
         if ($size !== false) {
             $info = ',S=' . $size . $info;
         }
-        $newFilename  = $tempFile['dirname'] . DIRECTORY_SEPARATOR;
+        $newFilename = $tempFile['dirname'] . DIRECTORY_SEPARATOR;
         $newFilename .= $recent ? 'new' : 'cur';
         $newFilename .= DIRECTORY_SEPARATOR . $tempFile['uniq'] . $info;
 
@@ -548,8 +492,8 @@ class Maildir extends Folder\Maildir implements WritableInterface
         }
 
         $this->files[] = [
-            'uniq'     => $tempFile['uniq'],
-            'flags'    => $flags,
+            'uniq' => $tempFile['uniq'],
+            'flags' => $flags,
             'filename' => $newFilename,
         ];
         if ($this->quota) {
@@ -561,8 +505,8 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * copy an existing message
      *
      * @param  int                              $id     number of message
-     * @param string|Folder $folder name or instance of targer folder
-     * @throws RuntimeException
+     * @param  string|\Laminas\Mail\Storage\Folder $folder name or instance of targer folder
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      */
     public function copyMessage($id, $folder)
     {
@@ -570,7 +514,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
             throw new StorageException\RuntimeException('storage is over quota!');
         }
 
-        if (! $folder instanceof Folder) {
+        if (! ($folder instanceof Folder)) {
             $folder = $this->getFolders($folder);
         }
 
@@ -614,13 +558,12 @@ class Maildir extends Folder\Maildir implements WritableInterface
             throw $exception;
         }
 
-        if (
-            $folder->getGlobalName() == $this->currentFolder
+        if ($folder->getGlobalName() == $this->currentFolder
             || ($this->currentFolder == 'INBOX' && $folder->getGlobalName() == '/')
         ) {
             $this->files[] = [
-                'uniq'     => $tempFile['uniq'],
-                'flags'    => $flags,
+                'uniq' => $tempFile['uniq'],
+                'flags' => $flags,
                 'filename' => $newFile,
             ];
         }
@@ -634,17 +577,16 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * move an existing message
      *
      * @param  int                              $id     number of message
-     * @param string|Folder $folder name or instance of targer folder
-     * @throws RuntimeException
+     * @param  string|\Laminas\Mail\Storage\Folder $folder name or instance of targer folder
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      */
     public function moveMessage($id, $folder)
     {
-        if (! $folder instanceof Folder) {
+        if (! ($folder instanceof Folder)) {
             $folder = $this->getFolders($folder);
         }
 
-        if (
-            $folder->getGlobalName() == $this->currentFolder
+        if ($folder->getGlobalName() == $this->currentFolder
             || ($this->currentFolder == 'INBOX' && $folder->getGlobalName() == '/')
         ) {
             throw new StorageException\RuntimeException('target is current folder');
@@ -699,7 +641,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
      *
      * @param   int   $id    number of message
      * @param   array $flags new flags for message
-     * @throws RuntimeException
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      */
     public function setFlags($id, $flags)
     {
@@ -730,8 +672,8 @@ class Maildir extends Folder\Maildir implements WritableInterface
     /**
      * stub for not supported message deletion
      *
-     * @param int $id
-     * @throws RuntimeException
+     * @param $id
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      */
     public function removeMessage($id)
     {
@@ -774,9 +716,8 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * get currently set quota
      *
      * @see \Laminas\Mail\Storage\Writable\Maildir::setQuota()
-     *
      * @param bool $fromStorage
-     * @throws RuntimeException
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      * @return bool|array
      */
     public function getQuota($fromStorage = false)
@@ -807,8 +748,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
 
     /**
      * @see http://www.inter7.com/courierimap/README.maildirquota.html "Calculating maildirsize"
-     *
-     * @throws RuntimeException
+     * @throws \Laminas\Mail\Storage\Exception\RuntimeException
      * @return array
      */
     protected function calculateMaildirsize()
@@ -902,7 +842,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
         }
 
         return [
-            'size'  => $totalSize,
+            'size' => $totalSize,
             'count' => $messages,
             'quota' => $quota,
         ];
@@ -910,7 +850,6 @@ class Maildir extends Folder\Maildir implements WritableInterface
 
     /**
      * @see http://www.inter7.com/courierimap/README.maildirquota.html "Calculating the quota for a Maildir++"
-     *
      * @param bool $forceRecalc
      * @return array
      */
@@ -920,8 +859,7 @@ class Maildir extends Folder\Maildir implements WritableInterface
         $totalSize   = 0;
         $messages    = 0;
         $maildirsize = '';
-        if (
-            ! $forceRecalc
+        if (! $forceRecalc
             && file_exists($this->rootdir . 'maildirsize')
             && filesize($this->rootdir . 'maildirsize') < 5120
         ) {
@@ -936,10 +874,10 @@ class Maildir extends Folder\Maildir implements WritableInterface
             }
         }
         if (! $fh) {
-            $result    = $this->calculateMaildirsize();
+            $result     = $this->calculateMaildirsize();
             $totalSize = $result['size'];
-            $messages  = $result['count'];
-            $quota     = $result['quota'];
+            $messages   = $result['count'];
+            $quota      = $result['quota'];
         } else {
             $maildirsize = explode("\n", $maildirsize);
             if (is_array($this->quota)) {
@@ -957,9 +895,9 @@ class Maildir extends Folder\Maildir implements WritableInterface
             }
             unset($maildirsize[0]);
             foreach ($maildirsize as $line) {
-                [$size, $count] = explode(' ', trim($line));
-                $totalSize     += $size;
-                $messages      += $count;
+                list($size, $count) = explode(' ', trim($line));
+                $totalSize += $size;
+                $messages += $count;
             }
         }
 
@@ -971,10 +909,10 @@ class Maildir extends Folder\Maildir implements WritableInterface
         // Also we're using local time to calculate the 15 minute offset. Touching a file just for known the
         // local time of the file storage isn't worth the hassle.
         if ($overQuota && ($maildirsize || filemtime($this->rootdir . 'maildirsize') > time() - 900)) {
-            $result    = $this->calculateMaildirsize();
-            $totalSize = $result['size'];
-            $messages  = $result['count'];
-            $quota     = $result['quota'];
+            $result     = $this->calculateMaildirsize();
+            $totalSize  = $result['size'];
+            $messages   = $result['count'];
+            $quota      = $result['quota'];
             $overQuota = false;
             $overQuota = $overQuota || (isset($quota['size']) && $totalSize > $quota['size']);
             $overQuota = $overQuota || (isset($quota['count']) && $messages > $quota['count']);
@@ -986,23 +924,20 @@ class Maildir extends Folder\Maildir implements WritableInterface
         }
 
         return [
-            'size'       => $totalSize,
-            'count'      => $messages,
-            'quota'      => $quota,
+            'size' => $totalSize,
+            'count' => $messages,
+            'quota' => $quota,
             'over_quota' => $overQuota,
         ];
     }
 
-    /**
-     * @param int $size
-     * @param int $count
-     * @return void
-     */
     protected function addQuotaEntry($size, $count = 1)
     {
-        // if (! file_exists($this->rootdir . 'maildirsize')) {
+        if (! file_exists($this->rootdir . 'maildirsize')) {
             // TODO: should get file handler from calculateQuota
-        // }
+        }
+        $size  = (int) $size;
+        $count = (int) $count;
         file_put_contents($this->rootdir . 'maildirsize', "$size $count\n", FILE_APPEND);
     }
 
@@ -1010,7 +945,6 @@ class Maildir extends Folder\Maildir implements WritableInterface
      * check if storage is currently over quota
      *
      * @see calculateQuota()
-     *
      * @param bool $detailedResponse return known data of quota and current size and message count
      * @param bool $forceRecalc
      * @return bool|array over quota state or detailed response

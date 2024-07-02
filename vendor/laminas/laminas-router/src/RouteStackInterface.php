@@ -4,26 +4,25 @@ declare(strict_types=1);
 
 namespace Laminas\Router;
 
-/**
- * @template TRoute of RouteInterface
- */
+use Traversable;
+
 interface RouteStackInterface extends RouteInterface
 {
     /**
      * Add a route to the stack.
      *
-     * @param string          $name
-     * @param iterable|TRoute $route
-     * @param int             $priority
-     * @return static
+     * @param  string  $name
+     * @param  mixed   $route
+     * @param  int $priority
+     * @return RouteStackInterface
      */
     public function addRoute($name, $route, $priority = null);
 
     /**
      * Add multiple routes to the stack.
      *
-     * @param iterable $routes
-     * @return static
+     * @param array|Traversable $routes
+     * @return RouteStackInterface
      */
     public function addRoutes($routes);
 
@@ -31,15 +30,15 @@ interface RouteStackInterface extends RouteInterface
      * Remove a route from the stack.
      *
      * @param  string $name
-     * @return static
+     * @return RouteStackInterface
      */
     public function removeRoute($name);
 
     /**
      * Remove all routes from the stack and set new ones.
      *
-     * @param iterable $routes
-     * @return static
+     * @param array|Traversable $routes
+     * @return RouteStackInterface
      */
     public function setRoutes($routes);
 }

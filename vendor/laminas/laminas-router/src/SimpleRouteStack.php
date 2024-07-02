@@ -15,23 +15,20 @@ use function sprintf;
 
 /**
  * Simple route stack implementation.
- *
- * @template TRoute of RouteInterface
- * @template-implements RouteStackInterface<TRoute>
  */
 class SimpleRouteStack implements RouteStackInterface
 {
     /**
      * Stack containing all routes.
      *
-     * @var PriorityList<string, TRoute>
+     * @var PriorityList
      */
     protected $routes;
 
     /**
      * Route plugin manager
      *
-     * @var RoutePluginManager<TRoute>
+     * @var RoutePluginManager
      */
     protected $routePluginManager;
 
@@ -43,14 +40,17 @@ class SimpleRouteStack implements RouteStackInterface
     protected $defaultParams = [];
 
     /**
-     * @param RoutePluginManager<TRoute>|null $routePluginManager
+     * Create a new simple route stack.
      */
     public function __construct(?RoutePluginManager $routePluginManager = null)
     {
-        /** @var PriorityList<string, TRoute> $this->routes */
         $this->routes = new PriorityList();
-        /** @var RoutePluginManager<TRoute> $this->routePluginManager */
-        $this->routePluginManager = $routePluginManager ?? new RoutePluginManager(new ServiceManager());
+
+        if (null === $routePluginManager) {
+            $routePluginManager = new RoutePluginManager(new ServiceManager());
+        }
+
+        $this->routePluginManager = $routePluginManager;
 
         $this->init();
     }
@@ -60,7 +60,7 @@ class SimpleRouteStack implements RouteStackInterface
      *
      * @see    \Laminas\Router\RouteInterface::factory()
      *
-     * @param  iterable $options
+     * @param  array|Traversable $options
      * @return SimpleRouteStack
      * @throws Exception\InvalidArgumentException
      */
@@ -103,8 +103,9 @@ class SimpleRouteStack implements RouteStackInterface
     }
 
     /**
-     * @param RoutePluginManager<TRoute> $routePlugins
-     * @return $this
+     * Set the route plugin manager.
+     *
+     * @return SimpleRouteStack
      */
     public function setRoutePluginManager(RoutePluginManager $routePlugins)
     {
@@ -115,14 +116,22 @@ class SimpleRouteStack implements RouteStackInterface
     /**
      * Get the route plugin manager.
      *
-     * @return RoutePluginManager<TRoute>
+     * @return RoutePluginManager
      */
     public function getRoutePluginManager()
     {
         return $this->routePluginManager;
     }
 
-    /** @inheritDoc */
+    /**
+     * addRoutes(): defined by RouteStackInterface interface.
+     *
+     * @see    RouteStackInterface::addRoutes()
+     *
+     * @param  array|Traversable $routes
+     * @return SimpleRouteStack
+     * @throws Exception\InvalidArgumentException
+     */
     public function addRoutes($routes)
     {
         if (! is_array($routes) && ! $routes instanceof Traversable) {
@@ -136,7 +145,16 @@ class SimpleRouteStack implements RouteStackInterface
         return $this;
     }
 
-    /** @inheritDoc */
+    /**
+     * addRoute(): defined by RouteStackInterface interface.
+     *
+     * @see    RouteStackInterface::addRoute()
+     *
+     * @param  string  $name
+     * @param  mixed   $route
+     * @param  int $priority
+     * @return SimpleRouteStack
+     */
     public function addRoute($name, $route, $priority = null)
     {
         if (! $route instanceof RouteInterface) {
@@ -152,14 +170,26 @@ class SimpleRouteStack implements RouteStackInterface
         return $this;
     }
 
-    /** @inheritDoc */
+    /**
+     * removeRoute(): defined by RouteStackInterface interface.
+     *
+     * @see    RouteStackInterface::removeRoute()
+     *
+     * @param  string $name
+     * @return SimpleRouteStack
+     */
     public function removeRoute($name)
     {
         $this->routes->remove($name);
         return $this;
     }
 
-    /** @inheritDoc */
+    /**
+     * setRoutes(): defined by RouteStackInterface interface.
+     *
+     * @param  array|Traversable $routes
+     * @return SimpleRouteStack
+     */
     public function setRoutes($routes)
     {
         $this->routes->clear();
@@ -192,7 +222,7 @@ class SimpleRouteStack implements RouteStackInterface
      * Get a route by name
      *
      * @param string $name
-     * @return TRoute|null the route
+     * @return RouteInterface the route
      */
     public function getRoute($name)
     {
@@ -227,8 +257,8 @@ class SimpleRouteStack implements RouteStackInterface
     /**
      * Create a route from array specifications.
      *
-     * @param  iterable $specs
-     * @return TRoute
+     * @param  array|Traversable $specs
+     * @return RouteInterface
      * @throws Exception\InvalidArgumentException
      */
     protected function routeFromArray($specs)

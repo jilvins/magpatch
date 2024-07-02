@@ -4,11 +4,11 @@ namespace Laminas\EventManager\Filter;
 
 use Laminas\EventManager\Exception;
 use Laminas\Stdlib\FastPriorityQueue;
-use ReturnTypeWillChange;
 
-use function assert;
-use function get_debug_type;
+use function get_class;
+use function gettype;
 use function is_callable;
+use function is_object;
 use function sprintf;
 
 /**
@@ -16,16 +16,13 @@ use function sprintf;
  * filter chain.
  *
  * Allows removal
- *
- * @template TValue of mixed
- * @template-extends FastPriorityQueue<TValue>
  */
 class FilterIterator extends FastPriorityQueue
 {
     /**
      * Does the queue contain a given value?
      *
-     * @param  TValue $datum
+     * @param  mixed $datum
      * @return bool
      */
     public function contains($datum)
@@ -44,7 +41,7 @@ class FilterIterator extends FastPriorityQueue
      * Requires a callable.
      *
      * @param callable $value
-     * @param int $priority
+     * @param mixed $priority
      * @return void
      * @throws Exception\InvalidArgumentException For non-callable $value.
      */
@@ -54,7 +51,7 @@ class FilterIterator extends FastPriorityQueue
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s can only aggregate callables; received %s',
                 self::class,
-                get_debug_type($value)
+                is_object($value) ? get_class($value) : gettype($value)
             ));
         }
         parent::insert($value, $priority);
@@ -105,7 +102,6 @@ class FilterIterator extends FastPriorityQueue
      * @param  FilterIterator $chain
      * @return mixed
      */
-    #[ReturnTypeWillChange]
     public function next($context = null, array $params = [], $chain = null)
     {
         if (empty($context) || ($chain instanceof FilterIterator && $chain->isEmpty())) {
@@ -118,7 +114,6 @@ class FilterIterator extends FastPriorityQueue
         }
 
         $next = $this->extract();
-        assert(is_callable($next));
         return $next($context, $params, $chain);
     }
 }

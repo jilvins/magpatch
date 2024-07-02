@@ -2,16 +2,12 @@
 
 namespace Laminas\Mail\Storage\Message;
 
-use Laminas\Mail\Storage\Exception\ExceptionInterface;
 use Laminas\Mail\Storage\Part;
-
-use function array_combine;
 
 class File extends Part\File implements MessageInterface
 {
     /**
      * flags for this message
-     *
      * @var array
      */
     protected $flags = [];
@@ -23,7 +19,7 @@ class File extends Part\File implements MessageInterface
      * - flags array with flags for message, keys are ignored, use constants defined in Laminas\Mail\Storage
      *
      * @param  array $params
-     * @throws ExceptionInterface
+     * @throws \Laminas\Mail\Storage\Exception\ExceptionInterface
      */
     public function __construct(array $params)
     {

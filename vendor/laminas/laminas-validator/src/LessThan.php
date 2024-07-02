@@ -100,9 +100,10 @@ class LessThan extends AbstractValidator
     /**
      * Sets the max option
      *
+     * @param  mixed $max
      * @return $this Provides a fluent interface
      */
-    public function setMax(mixed $max)
+    public function setMax($max)
     {
         $this->max = $max;
         return $this;

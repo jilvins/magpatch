@@ -2,29 +2,17 @@
 
 namespace Laminas\Mail\Header;
 
-use function getmypid;
-use function mt_rand;
-use function php_uname;
-use function preg_match;
-use function sha1;
-use function sprintf;
-use function strtolower;
-use function time;
-use function trim;
-
 class MessageId implements HeaderInterface
 {
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $messageId;
 
-    /**
-     * @param string $headerLine
-     * @return static
-     */
     public static function fromString($headerLine)
     {
-        [$name, $value] = GenericHeader::splitHeaderLine($headerLine);
-        $value          = HeaderWrap::mimeDecodeValue($value);
+        list($name, $value) = GenericHeader::splitHeaderLine($headerLine);
+        $value = HeaderWrap::mimeDecodeValue($value);
 
         // check to ensure proper header type for this factory
         if (strtolower($name) !== 'message-id') {
@@ -37,43 +25,27 @@ class MessageId implements HeaderInterface
         return $header;
     }
 
-    /**
-     * @return string
-     */
     public function getFieldName()
     {
         return 'Message-ID';
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getFieldValue($format = HeaderInterface::FORMAT_RAW)
     {
         return $this->messageId;
     }
 
-    /**
-     * @param string $encoding
-     * @return self
-     */
     public function setEncoding($encoding)
     {
         // This header must be always in US-ASCII
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getEncoding()
     {
         return 'ASCII';
     }
 
-    /**
-     * @return string
-     */
     public function toString()
     {
         return 'Message-ID: ' . $this->getFieldValue();
@@ -93,8 +65,7 @@ class MessageId implements HeaderInterface
             $id = trim($id, '<>');
         }
 
-        if (
-            ! HeaderValue::isValid($id)
+        if (! HeaderValue::isValid($id)
             || preg_match("/[\r\n]/", $id)
         ) {
             throw new Exception\InvalidArgumentException('Invalid ID detected');

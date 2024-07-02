@@ -71,9 +71,10 @@ abstract class AbstractAdapter extends AbstractValidator implements AdapterInter
      * Set single option for the object
      *
      * @param  string $key
+     * @param  mixed $value
      * @return $this Provides a fluent interface
      */
-    public function setOption($key, mixed $value)
+    public function setOption($key, $value)
     {
         if (in_array(strtolower($key), $this->skipOptions)) {
             return $this;

@@ -7,12 +7,14 @@ namespace Laminas\ReCaptcha;
 use Exception as PhpException;
 use Laminas\Http\Client as HttpClient;
 use Laminas\Http\Request as HttpRequest;
+use Laminas\ReCaptcha\Response;
 use Laminas\Stdlib\ArrayUtils;
-use Stringable;
 use Traversable;
 
-use function get_debug_type;
+use function get_class;
+use function gettype;
 use function is_array;
+use function is_object;
 use function sprintf;
 use function trigger_error;
 
@@ -20,10 +22,8 @@ use const E_USER_WARNING;
 
 /**
  * Render and verify ReCaptchas
- *
- * @final This class should not be extended and will be marked final in version 4.0
  */
-class ReCaptcha implements Stringable
+class ReCaptcha
 {
     /**
      * URI to the API
@@ -63,7 +63,7 @@ class ReCaptcha implements Stringable
     /**
      * Parameters for the object
      *
-     * @var array<string, mixed>
+     * @var array
      */
     protected $params = [
         'noscript' => false, /* Includes the <noscript> tag */
@@ -74,7 +74,7 @@ class ReCaptcha implements Stringable
      *
      * See the different options on https://developers.google.com/recaptcha/docs/display#config
      *
-     * @var array<string, mixed>
+     * @var array
      */
     protected $options = [
         'theme'            => 'light',
@@ -92,8 +92,8 @@ class ReCaptcha implements Stringable
     /**
      * @param string $siteKey
      * @param string $secretKey
-     * @param iterable<string, mixed> $params
-     * @param iterable<string, mixed> $options
+     * @param array|Traversable $params
+     * @param array|Traversable $options
      * @param string $ip
      */
     public function __construct(
@@ -148,14 +148,16 @@ class ReCaptcha implements Stringable
      * When the instance is used as a string it will display the recaptcha.
      * Since we can't throw exceptions within this method we will trigger
      * a user warning instead.
+     *
+     * @return string
      */
-    public function __toString(): string
+    public function __toString()
     {
         try {
             $return = $this->getHtml();
-        } catch (PhpException $phpException) {
+        } catch (PhpException $e) {
             $return = '';
-            trigger_error($phpException->getMessage(), E_USER_WARNING);
+            trigger_error($e->getMessage(), E_USER_WARNING);
         }
 
         return $return;
@@ -188,7 +190,7 @@ class ReCaptcha implements Stringable
      * Set a single parameter
      *
      * @param string $key
-     * @param mixed $value
+     * @param string $value
      * @return self
      */
     public function setParam($key, $value)
@@ -201,7 +203,7 @@ class ReCaptcha implements Stringable
     /**
      * Set parameters
      *
-     * @param iterable<string, mixed> $params
+     * @param array|Traversable $params
      * @return self
      * @throws Exception
      */
@@ -215,7 +217,7 @@ class ReCaptcha implements Stringable
             throw new Exception(sprintf(
                 '%s expects an array or Traversable set of params; received "%s"',
                 __METHOD__,
-                get_debug_type($params)
+                is_object($params) ? get_class($params) : gettype($params)
             ));
         }
 
@@ -229,7 +231,7 @@ class ReCaptcha implements Stringable
     /**
      * Get the parameter array
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function getParams()
     {
@@ -255,7 +257,7 @@ class ReCaptcha implements Stringable
      * Set a single option
      *
      * @param string $key
-     * @param mixed $value
+     * @param string $value
      * @return self
      */
     public function setOption($key, $value)
@@ -268,7 +270,7 @@ class ReCaptcha implements Stringable
     /**
      * Set options
      *
-     * @param iterable<string, mixed> $options
+     * @param array|Traversable $options
      * @return self
      * @throws Exception
      */
@@ -292,7 +294,7 @@ class ReCaptcha implements Stringable
     /**
      * Get the options array
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function getOptions()
     {
@@ -388,10 +390,10 @@ class ReCaptcha implements Stringable
         $langOption = '';
 
         if (! empty($this->options['hl'])) {
-            $langOption = sprintf('?hl=%s', $this->options['hl']);
+            $langOption = "?hl={$this->options['hl']}";
         }
 
-        $data = sprintf('data-sitekey="%s"', $this->siteKey);
+        $data = "data-sitekey=\"{$this->siteKey}\"";
 
         foreach (
             [
@@ -404,13 +406,13 @@ class ReCaptcha implements Stringable
             ] as $option
         ) {
             if (! empty($this->options[$option])) {
-                $data .= sprintf(' data-%s="%s"', $option, $this->options[$option]);
+                $data .= " data-$option=\"{$this->options[$option]}\"";
             }
         }
 
         $return = <<<HTML
 <script type="text/javascript" src="{$host}.js{$langOption}" async defer></script>
-<div class="g-recaptcha" {$data}></div>
+<div class="g-recaptcha" $data></div>
 HTML;
 
         if ($this->params['noscript']) {
@@ -438,7 +440,6 @@ HTML;
 </noscript>
 HTML;
         }
-
         return $return;
     }
 

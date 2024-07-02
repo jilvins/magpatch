@@ -6,5 +6,5 @@ use Laminas\Mvc\Controller\PluginManager as ControllerPluginManager;
 
 class ControllerPluginManagerFactory extends AbstractPluginManagerFactory
 {
-    public const PLUGIN_MANAGER_CLASS = ControllerPluginManager::class;
+    const PLUGIN_MANAGER_CLASS = ControllerPluginManager::class;
 }

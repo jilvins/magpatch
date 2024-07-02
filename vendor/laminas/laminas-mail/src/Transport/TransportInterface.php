@@ -12,7 +12,8 @@ interface TransportInterface
     /**
      * Send a mail message
      *
-     * @return void
+     * @param \Laminas\Mail\Message $message
+     * @return
      */
     public function send(Mail\Message $message);
 }

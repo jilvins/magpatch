@@ -2,7 +2,6 @@
 
 namespace Laminas\Mvc\Controller;
 
-use Laminas\Diactoros\ServerRequest;
 use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Request;
 use Laminas\Mvc\Exception\ReachedFinalHandlerException;
@@ -29,13 +28,25 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 final class MiddlewareController extends AbstractController
 {
+    /**
+     * @var MiddlewarePipe
+     */
+    private $pipe;
+
+    /**
+     * @var ResponseInterface
+     */
+    private $responsePrototype;
+
     public function __construct(
-        private MiddlewarePipe $pipe,
-        private ResponseInterface $responsePrototype,
+        MiddlewarePipe $pipe,
+        ResponseInterface $responsePrototype,
         EventManagerInterface $eventManager,
         MvcEvent $event
     ) {
-        $this->eventIdentifier   = self::class;
+        $this->eventIdentifier   = __CLASS__;
+        $this->pipe              = $pipe;
+        $this->responsePrototype = $responsePrototype;
 
         $this->setEventManager($eventManager);
         $this->setEvent($event);
@@ -55,7 +66,7 @@ final class MiddlewareController extends AbstractController
         );
 
         $result = $this->pipe->process($psr7Request, new CallableDelegateDecorator(
-            static function () : void {
+            function () {
                 throw ReachedFinalHandlerException::create();
             },
             $this->responsePrototype
@@ -67,7 +78,7 @@ final class MiddlewareController extends AbstractController
     }
 
     /**
-     * @return ServerRequest
+     * @return \Laminas\Diactoros\ServerRequest
      *
      * @throws RuntimeException
      */
@@ -79,7 +90,7 @@ final class MiddlewareController extends AbstractController
             throw new RuntimeException(sprintf(
                 'Expected request to be a %s, %s given',
                 Request::class,
-                $request::class
+                get_class($request)
             ));
         }
 
@@ -87,7 +98,9 @@ final class MiddlewareController extends AbstractController
     }
 
     /**
+     * @param ServerRequestInterface $request
      * @param RouteMatch|null $routeMatch
+     *
      * @return ServerRequestInterface
      */
     private function populateRequestParametersFromRoute(ServerRequestInterface $request, RouteMatch $routeMatch = null)

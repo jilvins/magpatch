@@ -8,7 +8,7 @@ use Laminas\ServiceManager\Factory\FactoryInterface;
 
 abstract class AbstractPluginManagerFactory implements FactoryInterface
 {
-    public const PLUGIN_MANAGER_CLASS = 'AbstractPluginManager';
+    const PLUGIN_MANAGER_CLASS = 'AbstractPluginManager';
 
     /**
      * Create and return a plugin manager.

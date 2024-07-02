@@ -7,9 +7,7 @@ namespace Laminas\Router;
 use Laminas\Stdlib\PriorityList as StdlibPriorityList;
 
 /**
- * @template TKey of string
- * @template TValue of RouteInterface
- * @template-extends StdlibPriorityList<TKey, TValue>
+ * Priority list
  */
 class PriorityList extends StdlibPriorityList
 {

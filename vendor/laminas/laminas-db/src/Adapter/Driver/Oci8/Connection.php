@@ -97,7 +97,7 @@ class Connection extends AbstractConnection
                 }
             }
 
-            return null;
+            return;
         };
 
         // http://www.php.net/manual/en/function.oci-connect.php

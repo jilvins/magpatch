@@ -2,28 +2,21 @@
 
 namespace Laminas\Config;
 
-use interop\container\containerinterface;
+use Interop\Container\ContainerInterface;
 use Laminas\ServiceManager\AbstractPluginManager;
 use Laminas\ServiceManager\Exception\InvalidServiceException;
 use Laminas\ServiceManager\Factory\InvokableFactory;
-use Zend\Config\Writer\Ini;
-use Zend\Config\Writer\JavaProperties;
-use Zend\Config\Writer\Json;
-use Zend\Config\Writer\PhpArray;
-use Zend\Config\Writer\Xml;
-use Zend\Config\Writer\Yaml;
 
 use function array_merge_recursive;
+use function get_class;
 use function gettype;
 use function is_object;
 use function sprintf;
 
 class WriterPluginManager extends AbstractPluginManager
 {
-    /** @var string */
     protected $instanceOf = Writer\AbstractWriter::class;
 
-    /** @var string[] */
     protected $aliases = [
         'ini'            => Writer\Ini::class,
         'Ini'            => Writer\Ini::class,
@@ -42,23 +35,22 @@ class WriterPluginManager extends AbstractPluginManager
         'JavaProperties' => Writer\JavaProperties::class,
 
         // Legacy Zend Framework aliases
-        Ini::class            => Writer\Ini::class,
-        JavaProperties::class => Writer\JavaProperties::class,
-        Json::class           => Writer\Json::class,
-        PhpArray::class       => Writer\PhpArray::class,
-        Yaml::class           => Writer\Yaml::class,
-        Xml::class            => Writer\Xml::class,
+        \Zend\Config\Writer\Ini::class => Writer\Ini::class,
+        \Zend\Config\Writer\JavaProperties::class => Writer\JavaProperties::class,
+        \Zend\Config\Writer\Json::class => Writer\Json::class,
+        \Zend\Config\Writer\PhpArray::class => Writer\PhpArray::class,
+        \Zend\Config\Writer\Yaml::class => Writer\Yaml::class,
+        \Zend\Config\Writer\Xml::class => Writer\Xml::class,
 
         // v2 normalized FQCNs
-        'zendconfigwriterini'            => Writer\Ini::class,
+        'zendconfigwriterini' => Writer\Ini::class,
         'zendconfigwriterjavaproperties' => Writer\JavaProperties::class,
-        'zendconfigwriterjson'           => Writer\Json::class,
-        'zendconfigwriterphparray'       => Writer\PhpArray::class,
-        'zendconfigwriteryaml'           => Writer\Yaml::class,
-        'zendconfigwriterxml'            => Writer\Xml::class,
+        'zendconfigwriterjson' => Writer\Json::class,
+        'zendconfigwriterphparray' => Writer\PhpArray::class,
+        'zendconfigwriteryaml' => Writer\Yaml::class,
+        'zendconfigwriterxml' => Writer\Xml::class,
     ];
 
-    /** @var string[] */
     protected $factories = [
         Writer\Ini::class            => InvokableFactory::class,
         Writer\JavaProperties::class => InvokableFactory::class,
@@ -90,9 +82,9 @@ class WriterPluginManager extends AbstractPluginManager
         if (! $instance instanceof $this->instanceOf) {
             throw new InvalidServiceException(sprintf(
                 '%s can only create instances of %s; %s is invalid',
-                static::class,
+                get_class($this),
                 $this->instanceOf,
-                is_object($instance) ? $instance::class : gettype($instance)
+                (is_object($instance) ? get_class($instance) : gettype($instance))
             ));
         }
     }
@@ -114,7 +106,7 @@ class WriterPluginManager extends AbstractPluginManager
         }
     }
 
-    public function __construct(containerinterface $container, array $config = [])
+    public function __construct(ContainerInterface $container, array $config = [])
     {
         $config = array_merge_recursive(['aliases' => $this->aliases], $config);
         parent::__construct($container, $config);

@@ -12,7 +12,7 @@ class Translator {
 		. '|(#(?P<id>[\w-]*))'
 		. '|(\.(?P<class>[\w-]*))'
 		. '|(?P<sibling>\s*\+\s*)'
-		. "|(\[(?P<attribute>[\w-]*)((?P<attribute_equals>[=~$|^*]+)(?P<attribute_value>(.+\[\]'?)|[^\]]+))*\])+"
+		. "|(\[(?P<attribute>[\w-]*)((?P<attribute_equals>[=~$]+)(?P<attribute_value>(.+\[\]'?)|[^\]]+))*\])+"
 		. '|(?P<descendant>\s+)'
 		. '/';
 
@@ -20,14 +20,17 @@ class Translator {
 	const EQUALS_CONTAINS_WORD = "~=";
 	const EQUALS_ENDS_WITH = "$=";
 	const EQUALS_CONTAINS = "*=";
-	const EQUALS_OR_STARTS_WITH_HYPHENATED = "|=";
+	const EQUALS_STARTS_WITH_OR_STARTS_WITH_HYPHENATED = "|=";
 	const EQUALS_STARTS_WITH = "^=";
 
-	public function __construct(
-			protected string $cssSelector, 
-			protected string $prefix = ".//", 
-			protected bool $htmlMode = true
-		) {
+	/** @var string */
+	protected $cssSelector;
+	/** @var string */
+	protected $prefix;
+
+	public function __construct(string $cssSelector, string $prefix = ".//") {
+		$this->cssSelector = $cssSelector;
+		$this->prefix = $prefix;
 	}
 
 	public function __toString():string {
@@ -58,7 +61,7 @@ class Translator {
 		$thread = array_values($thread);
 
 		$xpath = [$this->prefix];
-		$hasElement = false;
+		$prevType = "";
 		foreach($thread as $threadKey => $currentThreadItem) {
 			$next = isset($thread[$threadKey + 1])
 				? $thread[$threadKey + 1]
@@ -68,7 +71,6 @@ class Translator {
 			case "star":
 			case "element":
 				$xpath []= $currentThreadItem['content'];
-				$hasElement = true;
 				break;
 
 			case "pseudo":
@@ -158,26 +160,23 @@ class Translator {
 
 			case "child":
 				array_push($xpath, "/");
-				$hasElement = false;
 				break;
 
 			case "id":
 				array_push(
 					$xpath,
-					($hasElement ? '' : '*')
+					($prevType != "element"  ? '*' : '')
 					. "[@id='{$currentThreadItem['content']}']"
 				);
-				$hasElement = true;
 				break;
 
 			case "class":
 				// https://devhints.io/xpath#class-check
 				array_push(
 					$xpath,
-					($hasElement ? '' : '*')
+					(($prevType != "element" && $prevType != "class") ? '*' : '')
 					. "[contains(concat(' ',normalize-space(@class),' '),' {$currentThreadItem['content']} ')]"
 				);
-				$hasElement = true;
 				break;
 
 			case "sibling":
@@ -185,17 +184,11 @@ class Translator {
 					$xpath,
 					"/following-sibling::*[1]/self::"
 				);
-				$hasElement = false;
 				break;
 
 			case "attribute":
-				if(!$hasElement) {
+				if(!$prevType) {
 					array_push($xpath, "*");
-					$hasElement = true;
-				}
-
-				if($this->htmlMode) {
-					$currentThreadItem['content'] = strtolower($currentThreadItem['content']);
 				}
 
 				/** @var null|array<int, array<string, string>> $detail */
@@ -227,11 +220,7 @@ class Translator {
 					break;
 
 				case self::EQUALS_CONTAINS:
-					array_push(
-						$xpath,
-						"[contains(@{$currentThreadItem['content']},\"{$valueString}\")]"
-					);
-					break;
+					throw new NotYetImplementedException();
 
 				case self::EQUALS_CONTAINS_WORD:
 					array_push(
@@ -245,24 +234,11 @@ class Translator {
 					);
 					break;
 
-				case self::EQUALS_OR_STARTS_WITH_HYPHENATED:
-					array_push(
-						$xpath,
-						"["
-						. "@{$currentThreadItem['content']}=\"{$valueString}\" or "
-						. "starts-with(@{$currentThreadItem['content']}, \"{$valueString}-\")"
-						. "]"
-					);
-					break;
+				case self::EQUALS_STARTS_WITH_OR_STARTS_WITH_HYPHENATED:
+					throw new NotYetImplementedException();
 
 				case self::EQUALS_STARTS_WITH:
-					array_push(
-						$xpath,
-						"[starts-with("
-						. "@{$currentThreadItem['content']}, \"{$valueString}\""
-						. ")]"
-					);
-					break;
+					throw new NotYetImplementedException();
 
 				case self::EQUALS_ENDS_WITH:
 					array_push(
@@ -281,9 +257,10 @@ class Translator {
 
 			case "descendant":
 				array_push($xpath, "//");
-				$hasElement = false;
 				break;
 			}
+
+			$prevType = $currentThreadItem["type"];
 		}
 
 		return implode("", $xpath);

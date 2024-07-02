@@ -24,6 +24,7 @@ use function array_pop;
 use function call_user_func_array;
 use function class_exists;
 use function extract;
+use function get_class;
 use function gettype;
 use function is_array;
 use function is_callable;
@@ -230,7 +231,7 @@ class PhpRenderer implements Renderer, TreeRendererInterface
         if (! is_array($variables) && ! $variables instanceof ArrayAccess) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expected array or ArrayAccess object; received "%s"',
-                is_object($variables) ? $variables::class : gettype($variables)
+                is_object($variables) ? get_class($variables) : gettype($variables)
             ));
         }
 
@@ -353,7 +354,7 @@ class PhpRenderer implements Renderer, TreeRendererInterface
         if (! $helpers instanceof HelperPluginManager) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Helper helpers must extend Laminas\View\HelperPluginManager; got type "%s" instead',
-                is_object($helpers) ? $helpers::class : gettype($helpers)
+                is_object($helpers) ? get_class($helpers) : gettype($helpers)
             ));
         }
         $helpers->setRenderer($this);

@@ -7,7 +7,6 @@ namespace Laminas\Diactoros;
 use GdImage;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
-use Stringable;
 use Throwable;
 
 use function array_key_exists;
@@ -29,12 +28,13 @@ use function stream_get_contents;
 use function stream_get_meta_data;
 use function strstr;
 
+use const PHP_VERSION_ID;
 use const SEEK_SET;
 
 /**
  * Implementation of PSR HTTP streams
  */
-class Stream implements StreamInterface, Stringable
+class Stream implements StreamInterface
 {
     /**
      * A list of allowed stream resource types that are allowed to instantiate a Stream
@@ -44,11 +44,11 @@ class Stream implements StreamInterface, Stringable
     /** @var resource|null */
     protected $resource;
 
-    /** @var string|object|resource|null */
+    /** @var string|resource */
     protected $stream;
 
     /**
-     * @param string|object|resource $stream
+     * @param string|resource $stream
      * @param string $mode Mode with which to open stream
      * @throws Exception\InvalidArgumentException
      */
@@ -72,7 +72,7 @@ class Stream implements StreamInterface, Stringable
             }
 
             return $this->getContents();
-        } catch (RuntimeException) {
+        } catch (RuntimeException $e) {
             return '';
         }
     }
@@ -103,7 +103,7 @@ class Stream implements StreamInterface, Stringable
     /**
      * Attach a new stream/resource to the instance.
      *
-     * @param string|object|resource $resource
+     * @param string|resource $resource
      * @throws Exception\InvalidArgumentException For stream identifier that cannot be cast to a resource.
      * @throws Exception\InvalidArgumentException For non-resource stream.
      */
@@ -313,7 +313,7 @@ class Stream implements StreamInterface, Stringable
     /**
      * Set the internal stream resource.
      *
-     * @param string|object|resource $stream String stream target or stream resource.
+     * @param string|resource $stream String stream target or stream resource.
      * @param string $mode Resource mode for stream target.
      * @throws Exception\InvalidArgumentException For invalid streams or resources.
      */
@@ -352,13 +352,13 @@ class Stream implements StreamInterface, Stringable
      * @param mixed $resource Stream resource.
      * @psalm-assert-if-true resource $resource
      */
-    private function isValidStreamResourceType(mixed $resource): bool
+    private function isValidStreamResourceType($resource): bool
     {
         if (is_resource($resource)) {
             return in_array(get_resource_type($resource), self::ALLOWED_STREAM_RESOURCE_TYPES, true);
         }
 
-        if ($resource instanceof GdImage) {
+        if (PHP_VERSION_ID >= 80000 && $resource instanceof GdImage) {
             return true;
         }
 

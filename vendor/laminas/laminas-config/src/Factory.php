@@ -8,6 +8,7 @@ use Psr\Container\ContainerInterface;
 use function dirname;
 use function file_exists;
 use function file_put_contents;
+use function get_class;
 use function get_include_path;
 use function gettype;
 use function is_array;
@@ -31,14 +32,14 @@ class Factory
      *
      * @var null|ContainerInterface
      */
-    public static $readers;
+    public static $readers = null;
 
     /**
      * Plugin manager for loading writers
      *
      * @var null|ContainerInterface
      */
-    public static $writers;
+    public static $writers = null;
 
     /**
      * Registered config file extensions.
@@ -47,12 +48,12 @@ class Factory
      * @var array
      */
     protected static $extensions = [
-        'ini'        => 'ini',
-        'json'       => 'json',
-        'xml'        => 'xml',
-        'yaml'       => 'yaml',
-        'yml'        => 'yaml',
-        'properties' => 'javaproperties',
+        'ini'         => 'ini',
+        'json'        => 'json',
+        'xml'         => 'xml',
+        'yaml'        => 'yaml',
+        'yml'         => 'yaml',
+        'properties'  => 'javaproperties',
     ];
 
     /**
@@ -125,12 +126,11 @@ class Factory
         } elseif (isset(static::$extensions[$extension])) {
             $reader = static::$extensions[$extension];
             if (! $reader instanceof Reader\ReaderInterface) {
-                $reader                         = static::getReaderPluginManager()->get($reader);
+                $reader = static::getReaderPluginManager()->get($reader);
                 static::$extensions[$extension] = $reader;
             }
 
-            // @codingStandardsIgnoreLine
-            /** @var Reader\ReaderInterface $reader */
+            /* @var Reader\ReaderInterface $reader */
             $config = $reader->fromFile($filepath);
         } else {
             throw new Exception\RuntimeException(sprintf(
@@ -139,7 +139,7 @@ class Factory
             ));
         }
 
-        return $returnConfigObject ? new Config($config) : $config;
+        return ($returnConfigObject) ? new Config($config) : $config;
     }
 
     /**
@@ -158,7 +158,7 @@ class Factory
             $config = ArrayUtils::merge($config, static::fromFile($file, false, $useIncludePath));
         }
 
-        return $returnConfigObject ? new Config($config) : $config;
+        return ($returnConfigObject) ? new Config($config) : $config;
     }
 
     /**
@@ -172,12 +172,11 @@ class Factory
      */
     public static function toFile($filename, $config)
     {
-        if (
-            (is_object($config) && ! $config instanceof Config)
+        if ((is_object($config) && ! ($config instanceof Config))
             || (! is_object($config) && ! is_array($config))
         ) {
             throw new Exception\InvalidArgumentException(
-                __METHOD__ . " \$config should be an array or instance of Laminas\\Config\\Config"
+                __METHOD__." \$config should be an array or instance of Laminas\\Config\\Config"
             );
         }
 
@@ -203,8 +202,8 @@ class Factory
         }
 
         $writer = static::$writerExtensions[$extension];
-        if ($writer instanceof Writer\AbstractWriter === false) {
-            $writer                               = self::getWriterPluginManager()->get($writer);
+        if (($writer instanceof Writer\AbstractWriter) === false) {
+            $writer = self::getWriterPluginManager()->get($writer);
             static::$writerExtensions[$extension] = $writer;
         }
 
@@ -220,6 +219,7 @@ class Factory
     /**
      * Set reader plugin manager
      *
+     * @param ContainerInterface $readers
      * @return void
      */
     public static function setReaderPluginManager(ContainerInterface $readers)
@@ -246,6 +246,7 @@ class Factory
     /**
      * Set writer plugin manager
      *
+     * @param ContainerInterface $writers
      * @return void
      */
     public static function setWriterPluginManager(ContainerInterface $writers)
@@ -284,10 +285,10 @@ class Factory
 
         if (! is_string($reader) && ! $reader instanceof Reader\ReaderInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
-                'Reader should be plugin name, class name or '
-                . 'instance of %s\Reader\ReaderInterface; received "%s"',
+                'Reader should be plugin name, class name or ' .
+                'instance of %s\Reader\ReaderInterface; received "%s"',
                 __NAMESPACE__,
-                is_object($reader) ? $reader::class : gettype($reader)
+                (is_object($reader) ? get_class($reader) : gettype($reader))
             ));
         }
 
@@ -308,10 +309,10 @@ class Factory
 
         if (! is_string($writer) && ! $writer instanceof Writer\AbstractWriter) {
             throw new Exception\InvalidArgumentException(sprintf(
-                'Writer should be plugin name, class name or '
-                . 'instance of %s\Writer\AbstractWriter; received "%s"',
+                'Writer should be plugin name, class name or ' .
+                'instance of %s\Writer\AbstractWriter; received "%s"',
                 __NAMESPACE__,
-                is_object($writer) ? $writer::class : gettype($writer)
+                (is_object($writer) ? get_class($writer) : gettype($writer))
             ));
         }
 

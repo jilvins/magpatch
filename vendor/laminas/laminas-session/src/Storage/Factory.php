@@ -15,7 +15,6 @@ use function class_exists;
 use function class_implements;
 use function class_parents;
 use function get_class;
-use function get_debug_type;
 use function gettype;
 use function in_array;
 use function is_array;
@@ -39,7 +38,7 @@ abstract class Factory
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects the $type argument to be a string class name; received "%s"',
                 __METHOD__,
-                get_debug_type($type)
+                is_object($type) ? get_class($type) : gettype($type)
             ));
         }
         if (! class_exists($type)) {
@@ -61,7 +60,7 @@ abstract class Factory
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects the $options argument to be an array or Traversable; received "%s"',
                 __METHOD__,
-                get_debug_type($options)
+                is_object($options) ? get_class($options) : gettype($options)
             ));
         }
 
@@ -146,7 +145,7 @@ abstract class Factory
                 throw new Exception\InvalidArgumentException(sprintf(
                     '%s expects the "input" option to be null, an array, or to implement ArrayAccess; received "%s"',
                     $type,
-                    is_object($input) ? $input::class : gettype($input)
+                    is_object($input) ? get_class($input) : gettype($input)
                 ));
             }
         }

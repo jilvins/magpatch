@@ -50,6 +50,8 @@ class Config implements Countable, Iterator, ArrayAccess
     protected $skipNextIteration;
 
     /**
+     * Constructor.
+     *
      * Data is read-only unless $allowModifications is set to true
      * on construction.
      *
@@ -199,7 +201,6 @@ class Config implements Countable, Iterator, ArrayAccess
      * count(): defined by Countable interface.
      *
      * @see    Countable::count()
-     *
      * @return int
      */
     #[ReturnTypeWillChange]
@@ -212,7 +213,6 @@ class Config implements Countable, Iterator, ArrayAccess
      * current(): defined by Iterator interface.
      *
      * @see    Iterator::current()
-     *
      * @return mixed
      */
     #[ReturnTypeWillChange]
@@ -226,7 +226,6 @@ class Config implements Countable, Iterator, ArrayAccess
      * key(): defined by Iterator interface.
      *
      * @see    Iterator::key()
-     *
      * @return mixed
      */
     #[ReturnTypeWillChange]
@@ -239,7 +238,6 @@ class Config implements Countable, Iterator, ArrayAccess
      * next(): defined by Iterator interface.
      *
      * @see    Iterator::next()
-     *
      * @return void
      */
     #[ReturnTypeWillChange]
@@ -257,7 +255,6 @@ class Config implements Countable, Iterator, ArrayAccess
      * rewind(): defined by Iterator interface.
      *
      * @see    Iterator::rewind()
-     *
      * @return void
      */
     #[ReturnTypeWillChange]
@@ -271,20 +268,18 @@ class Config implements Countable, Iterator, ArrayAccess
      * valid(): defined by Iterator interface.
      *
      * @see    Iterator::valid()
-     *
      * @return bool
      */
     #[ReturnTypeWillChange]
     public function valid()
     {
-        return $this->key() !== null;
+        return ($this->key() !== null);
     }
 
     /**
      * offsetExists(): defined by ArrayAccess interface.
      *
      * @see    ArrayAccess::offsetExists()
-     *
      * @param  mixed $offset
      * @return bool
      */
@@ -298,7 +293,6 @@ class Config implements Countable, Iterator, ArrayAccess
      * offsetGet(): defined by ArrayAccess interface.
      *
      * @see    ArrayAccess::offsetGet()
-     *
      * @param  mixed $offset
      * @return mixed
      */
@@ -312,7 +306,6 @@ class Config implements Countable, Iterator, ArrayAccess
      * offsetSet(): defined by ArrayAccess interface.
      *
      * @see    ArrayAccess::offsetSet()
-     *
      * @param  mixed $offset
      * @param  mixed $value
      * @return void
@@ -327,7 +320,6 @@ class Config implements Countable, Iterator, ArrayAccess
      * offsetUnset(): defined by ArrayAccess interface.
      *
      * @see    ArrayAccess::offsetUnset()
-     *
      * @param  mixed $offset
      * @return void
      */
@@ -345,6 +337,7 @@ class Config implements Countable, Iterator, ArrayAccess
      * - Items in $merge with INTEGER keys will be appended.
      * - Items in $merge with STRING keys will overwrite current values.
      *
+     * @param  Config $merge
      * @return self
      */
     public function merge(Config $merge)

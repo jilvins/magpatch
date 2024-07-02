@@ -23,6 +23,7 @@ use function array_merge;
 use function assert;
 use function call_user_func;
 use function dirname;
+use function get_class;
 use function in_array;
 use function is_array;
 use function ksort;
@@ -44,9 +45,11 @@ final class DependencyRewriterV2 extends AbstractDependencyRewriter implements
     /** @var callable */
     private $applicationFactory;
 
-    private string $composerFile;
+    /** @var string */
+    private $composerFile;
 
-    private InputInterface $input;
+    /** @var InputInterface */
+    private $input;
 
     public function __construct(
         ?callable $applicationFactory = null,
@@ -57,7 +60,9 @@ final class DependencyRewriterV2 extends AbstractDependencyRewriter implements
 
         /** @psalm-suppress MixedAssignment */
         $this->composerFile       = $composerFile ?: Factory::getComposerFile();
-        $this->applicationFactory = $applicationFactory ?? static fn(): Application => new Application();
+        $this->applicationFactory = $applicationFactory ?? static function (): Application {
+            return new Application();
+        };
         $this->input              = $input ?? new ArgvInput();
     }
 
@@ -86,7 +91,7 @@ final class DependencyRewriterV2 extends AbstractDependencyRewriter implements
                 // Nothing to do
                 $this->output(sprintf(
                     '<info>Exiting; operation of type %s not supported</info>',
-                    $operation::class
+                    get_class($operation)
                 ), IOInterface::DEBUG);
                 return;
         }

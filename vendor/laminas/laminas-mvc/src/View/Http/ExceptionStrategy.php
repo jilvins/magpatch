@@ -85,6 +85,7 @@ class ExceptionStrategy extends AbstractListenerAggregate
      *         priority dispatch.error event (or goto a render event) to ensure
      *         rendering occurs, and that munging of view models occurs when
      *         expected.
+     * @param  MvcEvent $e
      * @return void
      */
     public function prepareExceptionViewModel(MvcEvent $e)

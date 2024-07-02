@@ -14,6 +14,7 @@ use function bin2hex;
 use function chr;
 use function count;
 use function function_exists;
+use function get_class;
 use function get_class_vars;
 use function get_object_vars;
 use function implode;
@@ -40,6 +41,20 @@ use function strlen;
 class Encoder
 {
     /**
+     * Whether or not to check for possible cycling.
+     *
+     * @var bool
+     */
+    protected $cycleCheck;
+
+    /**
+     * Additional options used during encoding.
+     *
+     * @var array
+     */
+    protected $options = [];
+
+    /**
      * Array of visited objects; used to prevent cycling.
      *
      * @var array
@@ -50,8 +65,10 @@ class Encoder
      * @param bool $cycleCheck Whether or not to check for recursion when encoding.
      * @param array $options Additional options used during encoding.
      */
-    protected function __construct(protected $cycleCheck = false, protected array $options = [])
+    protected function __construct($cycleCheck = false, array $options = [])
     {
+        $this->cycleCheck = $cycleCheck;
+        $this->options    = $options;
     }
 
     /**
@@ -62,7 +79,7 @@ class Encoder
      * @param array $options Additional options used during encoding.
      * @return string The encoded value.
      */
-    public static function encode(mixed $value, $cycleCheck = false, array $options = [])
+    public static function encode($value, $cycleCheck = false, array $options = [])
     {
         $encoder = new static($cycleCheck, $options);
 
@@ -87,7 +104,7 @@ class Encoder
      * @param mixed $value The value to be encoded.
      * @return string Encoded value.
      */
-    protected function encodeValue(mixed &$value)
+    protected function encodeValue(&$value)
     {
         if (is_object($value)) {
             return $this->encodeObject($value);
@@ -122,11 +139,11 @@ class Encoder
                 ) {
                     throw new RecursionException(sprintf(
                         'Cycles not supported in JSON encoding; cycle introduced by class "%s"',
-                        $value::class
+                        get_class($value)
                     ));
                 }
 
-                return '"* RECURSION (' . str_replace('\\', '\\\\', $value::class) . ') *"';
+                return '"* RECURSION (' . str_replace('\\', '\\\\', get_class($value)) . ') *"';
             }
 
             $this->visited[] = $value;
@@ -157,7 +174,7 @@ class Encoder
             }
         }
 
-        $className = $value::class;
+        $className = get_class($value);
         return '{"__className":'
             . $this->encodeString($className)
             . $props . '}';
@@ -166,9 +183,10 @@ class Encoder
     /**
      * Determine if an object has been serialized already.
      *
+     * @param mixed $value
      * @return bool
      */
-    protected function wasVisited(mixed &$value)
+    protected function wasVisited(&$value)
     {
         if (in_array($value, $this->visited, true)) {
             return true;
@@ -247,9 +265,10 @@ class Encoder
      * If value type is not a string, number, boolean, or null, the string
      * 'null' is returned.
      *
+     * @param mixed $value
      * @return string
      */
-    protected function encodeDatum(mixed $value)
+    protected function encodeDatum($value)
     {
         if (is_int($value) || is_float($value)) {
             return str_replace(',', '.', (string) $value);
@@ -576,23 +595,27 @@ class Encoder
         if (function_exists('mb_convert_encoding')) {
             return mb_convert_encoding($utf8, 'UTF-16', 'UTF-8');
         }
-        return match (strlen($utf8)) {
-            // This case should never be reached, because we are in ASCII range;
-            // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-            1 => $utf8,
 
-            // Return a UTF-16 character from a 2-byte UTF-8 char;
-            // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-            2 => chr(0x07 & (ord($utf8[0]) >> 2)) . chr((0xC0 & (ord($utf8[0]) << 6)) | (0x3F & ord($utf8[1]))),
+        switch (strlen($utf8)) {
+            case 1:
+                // This case should never be reached, because we are in ASCII range;
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return $utf8;
 
-            // Return a UTF-16 character from a 3-byte UTF-8 char;
-            // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-            3 => chr((0xF0 & (ord($utf8[0]) << 4))
-                | (0x0F & (ord($utf8[1]) >> 2))) . chr((0xC0 & (ord($utf8[1]) << 6))
-                | (0x7F & ord($utf8[2]))),
+            case 2:
+                // Return a UTF-16 character from a 2-byte UTF-8 char;
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return chr(0x07 & (ord($utf8[0]) >> 2)) . chr((0xC0 & (ord($utf8[0]) << 6)) | (0x3F & ord($utf8[1])));
 
-            // ignoring UTF-32 for now, sorry
-            default => '',
-        };
+            case 3:
+                // Return a UTF-16 character from a 3-byte UTF-8 char;
+                // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                return chr((0xF0 & (ord($utf8[0]) << 4))
+                    | (0x0F & (ord($utf8[1]) >> 2))) . chr((0xC0 & (ord($utf8[1]) << 6))
+                    | (0x7F & ord($utf8[2])));
+        }
+
+        // ignoring UTF-32 for now, sorry
+        return '';
     }
 }

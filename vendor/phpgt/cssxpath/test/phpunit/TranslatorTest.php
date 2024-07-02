@@ -173,116 +173,6 @@ class TranslatorTest extends TestCase {
 		);
 	}
 
-	public function testCaseSensitivityHtmlMode() {
-		$document = new DOMDocument("1.0", "UTF-8");
-		$document->loadHTML("<div data-FOO='bar'>baz</div>");
-
-		$xpath = new DOMXPath($document);
-
-
-		$attributeNameIsCaseInsensitive = new Translator(
-			"[data-FOO='bar']"
-		);
-		self::assertEquals(
-			1,
-			$xpath->query($attributeNameIsCaseInsensitive)->length
-		);
-
-		$attributeNameCaseInsensitive = new Translator(
-			"[data-foo='bar']"
-		);
-		self::assertEquals(
-			1,
-			$xpath->query($attributeNameCaseInsensitive)->length
-		);
-
-		$attributeValueCaseSensitive = new Translator(
-			"[data-foo='bar']"
-		);
-		self::assertEquals(
-			1,
-			$xpath->query($attributeValueCaseSensitive)->length
-		);
-
-		$attributeValueCaseSensitive = new Translator(
-			"[data-foo='BAR']"
-		);
-		self::assertEquals(
-			0,
-			$xpath->query($attributeValueCaseSensitive)->length
-		);
-
-	}
-
-	public function testCaseSensitivityXmlMode() {
-		$document = new DOMDocument("1.0", "UTF-8");
-		$document->loadXML('<div data-FOO="bar">baz</div>');
-
-		$xpath = new DOMXPath($document);
-
-		$attributeNameAndValueIsCaseSensitive = new Translator(
-			"[data-FOO='bar']",
-			prefix: '//',
-			htmlMode: false
-		);
-		self::assertEquals(
-			1,
-			$xpath->query($attributeNameAndValueIsCaseSensitive)->length
-		);
-
-		$attributeNameIsCaseSensitive = new Translator(
-			"[data-foo='bar']",
-			prefix: '//',
-			htmlMode: false
-		);
-		self::assertEquals(
-			0,
-			$xpath->query($attributeNameIsCaseSensitive)->length
-		);
-
-		$attributeValueCaseSensitive = new Translator(
-			"[data-FOO='BAR']",
-			prefix: '//',
-			htmlMode: false
-		);
-		self::assertEquals(
-			0,
-			$xpath->query($attributeValueCaseSensitive)->length
-		);
-
-	}
-
-	public function testAttributeStarSelector() {
-		$document = new DOMDocument("1.0", "UTF-8");
-		$document->loadHTML(Helper::HTML_COMPLEX);
-		$contentElement = $document->getElementById("content-element");
-		$xpath = new DOMXPath($document);
-
-		$selector = new Translator("[data-categories*=test]");
-		self::assertSame(
-			$contentElement,
-			$xpath->query($selector)->item(0)
-		);
-
-		$selector = new Translator("*[data-categories*=blog-test]");
-		self::assertSame(
-			$contentElement,
-			$xpath->query($selector)->item(0)
-		);
-
-		$selector = new Translator("div[data-categories*=xampl]");
-		self::assertSame(
-			$contentElement,
-			$xpath->query($selector)->item(0)
-		);
-
-		$selector = new Translator("[data-categories*=test]");
-		self::assertSame(
-			$contentElement,
-			$xpath->query($selector)->item(0)
-		);
-	}
-
 	public function testAttributeTildeSelector() {
 		$document = new DOMDocument("1.0", "UTF-8");
 		$document->loadHTML(Helper::HTML_COMPLEX);
@@ -320,30 +210,6 @@ class TranslatorTest extends TestCase {
 		);
 	}
 
-	public function testAttributeEqualsOrStartsWithHypehnatedSelector() {
-		$document = new DOMDocument("1.0", "UTF-8");
-		$document->loadHTML("<div class='en'></div><div class='en-'></div><div class='en-uk'></div><div class='es'></div>");
-		$xpath = new DOMXPath($document);
-
-		$selector = new Translator("[class|=en]");
-		self::assertEquals(
-			3,
-			$xpath->query($selector)->length
-		);
-	}
-
-	public function testAttributeStartsWithSelector() {
-		$document = new DOMDocument("1.0", "UTF-8");
-		$document->loadHTML("<div class='class1'></div><div class='foo class1'></div><div class='class1 class2'></div><div class='class2'></div>");
-		$xpath = new DOMXPath($document);
-
-		$selector = new Translator("[class^=class1]");
-		self::assertEquals(
-			2,
-			$xpath->query($selector)->length
-		);
-	}
-
 	public function testClassSelector() {
 		$document = new DOMDocument("1.0", "UTF-8");
 		$document->loadHTML(Helper::HTML_COMPLEX);
@@ -362,7 +228,7 @@ class TranslatorTest extends TestCase {
 		)->item(0);
 		self::assertSame($navElement, $navElement2);
 
-		$navElement3 = $xpath->query(
+ 		$navElement3 = $xpath->query(
 			new Translator("nav.c-menu.main-selection")
 		)->item(0);
 		self::assertSame($navElement, $navElement3);
@@ -530,40 +396,5 @@ class TranslatorTest extends TestCase {
 		$choiceInputs = $xpath->query($choiceTranslator);
 
 		self::assertEquals(3, $choiceInputs->length);
-	}
-
-	public function testCombinedSelectors() {
-		$document = new DOMDocument("1.0", "UTF-8");
-		$document->loadHTML(Helper::HTML_SELECTORS);
-		$xpath = new DOMXPath($document);
-
-		$classIdTranslator = new Translator(".content#content-element");
-		$classAttr2Translator = new Translator(".content[data-attr='2']");
-
-		$titleEl = $xpath->query($classIdTranslator)->item(0);
-		self::assertEquals("Content with ID", $titleEl->nodeValue);
-
-		$attr2El = $xpath->query($classAttr2Translator)->item(0);
-		self::assertEquals("Content with attribute 2", $attr2El->nodeValue);
-	}
-
-	public function testChildWithAttribute() {
-		$document = new DOMDocument("1.0", "UTF-8");
-		$document->loadHTML(Helper::HTML_CHECKBOX);
-		$xpath = new DOMXPath($document);
-		$choiceTranslator = new Translator("form [name]");
-		$choiceInputs = $xpath->query($choiceTranslator);
-		self::assertEquals(3, $choiceInputs->length);
-	}
-
-	public function testMultipleNamedElements() {
-		$document = new DOMDocument("1.0", "UTF-8");
-		$document->loadHTML(Helper::HTML_SELECTS);
-		$xpath = new DOMXPath($document);
-		$translator = new Translator("form [name='from'], form [name='to']");
-		$selectElements = $xpath->query($translator);
-		self::assertEquals(2, $selectElements->length);
-		self::assertSame("from", $selectElements->item(0)->getAttribute("name"));
-		self::assertSame("to", $selectElements->item(1)->getAttribute("name"));
 	}
 }

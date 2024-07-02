@@ -13,7 +13,10 @@ use PhpParser\PrettyPrinter\Standard;
  */
 final class PrettyPrinter extends Standard
 {
-    private int $varExporterNestingLevel = 0;
+    /**
+     * @var int
+     */
+    private $varExporterNestingLevel = 0;
 
     /**
      * @param int $level

@@ -303,9 +303,10 @@ class ValidatorChain implements Countable, IteratorAggregate, ValidatorInterface
     /**
      * Invoke chain as command
      *
+     * @param  mixed $value
      * @return bool
      */
-    public function __invoke(mixed $value)
+    public function __invoke($value)
     {
         return $this->isValid($value);
     }

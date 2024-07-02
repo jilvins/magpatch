@@ -6,22 +6,22 @@
     "config": {
         "sort-packages": true,
         "platform": {
-            "php": "8.0.99"
+            "php": "7.4.99"
         },
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
     },
     "require": {
-        "php": "~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0",
+        "php": "^7.4 || ~8.0.0 || ~8.1.0",
         "composer-plugin-api": ">=1.1.0 <2.3.0"
     },
     "require-dev": {
         "composer/composer": ">=1.9.0 <2.3.0",
-        "laminas/laminas-coding-standard": "~2.5.0",
+        "laminas/laminas-coding-standard": "~2.4.0",
         "mikey179/vfsstream": "^1.6.11",
         "phpunit/phpunit": "^9.5.5",
-        "psalm/plugin-phpunit": "^0.18.0",
+        "psalm/plugin-phpunit": "^0.17.0",
         "roave/security-advisories": "dev-master",
         "vimeo/psalm": "^4.5"
     },

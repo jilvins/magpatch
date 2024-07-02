@@ -10,6 +10,7 @@ use function array_search;
 use function array_shift;
 use function class_exists;
 use function explode;
+use function get_class;
 use function hash_algos;
 use function implode;
 use function in_array;
@@ -29,7 +30,7 @@ use function session_status;
 use function session_write_close;
 use function set_error_handler;
 use function sprintf;
-use function str_contains;
+use function strpos;
 use function strtolower;
 use function trigger_error;
 use function trim;
@@ -201,23 +202,26 @@ class SessionConfig extends StandardConfig
      */
     public function getStorageOption($storageOption)
     {
-        return match ($storageOption) {
-             // No remote storage option; just return the current value
-            'remember_me_seconds' => $this->rememberMeSeconds,
-
-            'url_rewriter_tags' => ini_get('url_rewriter.tags'),
-
+        switch ($storageOption) {
+            case 'remember_me_seconds':
+                // No remote storage option; just return the current value
+                return $this->rememberMeSeconds;
+            case 'url_rewriter_tags':
+                return ini_get('url_rewriter.tags');
             // The following all need a transformation on the retrieved value;
             // however they use the same key naming scheme
-            'use_cookies',
-            'use_only_cookies',
-            'use_trans_sid',
-            'cookie_httponly' => (bool) ini_get('session.' . $storageOption),
-
-            'save_handler' => $this->saveHandler ?: $this->sessionModuleName(),
-
-            default => ini_get('session.' . $storageOption),
-        };
+            case 'use_cookies':
+            case 'use_only_cookies':
+            case 'use_trans_sid':
+            case 'cookie_httponly':
+                return (bool) ini_get('session.' . $storageOption);
+            case 'save_handler':
+                // Save handlers must be treated differently due to changes
+                // introduced in PHP 7.2.
+                return $this->saveHandler ?: $this->sessionModuleName();
+            default:
+                return ini_get('session.' . $storageOption);
+        }
     }
 
     /**
@@ -442,7 +446,7 @@ class SessionConfig extends StandardConfig
 
         $content = array_shift($matches);
 
-        $handlers = str_contains($content, '</td>')
+        $handlers = false !== strpos($content, '</td>')
             ? $this->parseSaveHandlersFromHtml($content)
             : $this->parseSaveHandlersFromPlainText($content);
 
@@ -520,14 +524,14 @@ class SessionConfig extends StandardConfig
         if (! $phpSaveHandler instanceof SessionHandlerInterface) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Invalid save handler specified ("%s"); must implement %s',
-                $phpSaveHandler::class,
+                get_class($phpSaveHandler),
                 SessionHandlerInterface::class
             ));
         }
 
         session_set_save_handler($phpSaveHandler);
 
-        return $phpSaveHandler::class;
+        return get_class($phpSaveHandler);
     }
 
     /**

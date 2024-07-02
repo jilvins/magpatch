@@ -111,13 +111,9 @@ class Breadcrumbs extends AbstractHelper
         } else {
             /** @var View\Helper\EscapeHtml $escaper */
             $escaper = $this->view->plugin('escapeHtml');
-            $label   = $escaper(
+            $html    = $escaper(
                 $this->translate($active->getLabel(), $active->getTextDomain())
             );
-            $attribs = [
-                'aria-current' => 'page',
-            ];
-            $html    = '<span' . $this->htmlAttribs($attribs) . '>' . $label . '</span>';
         }
 
         // walk back to root

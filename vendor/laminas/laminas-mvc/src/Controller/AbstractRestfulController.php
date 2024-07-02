@@ -2,10 +2,6 @@
 
 namespace Laminas\Mvc\Controller;
 
-use Laminas\Mvc\Exception\InvalidArgumentException;
-use Laminas\Mvc\Exception\DomainException;
-use Laminas\Mvc\Exception\RuntimeException;
-use Laminas\Router\RouteMatch;
 use Laminas\Http\Request as HttpRequest;
 use Laminas\Json\Json;
 use Laminas\Mvc\Exception;
@@ -18,12 +14,12 @@ use Laminas\Stdlib\ResponseInterface as Response;
  */
 abstract class AbstractRestfulController extends AbstractController
 {
-    public const CONTENT_TYPE_JSON = 'json';
+    const CONTENT_TYPE_JSON = 'json';
 
     /**
      * {@inheritDoc}
      */
-    protected $eventIdentifier = self::class;
+    protected $eventIdentifier = __CLASS__;
 
     /**
      * @var array
@@ -93,9 +89,10 @@ abstract class AbstractRestfulController extends AbstractController
     /**
      * Create a new resource
      *
+     * @param  mixed $data
      * @return mixed
      */
-    public function create(mixed $data)
+    public function create($data)
     {
         $this->response->setStatusCode(405);
 
@@ -107,9 +104,10 @@ abstract class AbstractRestfulController extends AbstractController
     /**
      * Delete an existing resource
      *
+     * @param  mixed $id
      * @return mixed
      */
-    public function delete(mixed $id)
+    public function delete($id)
     {
         $this->response->setStatusCode(405);
 
@@ -138,9 +136,10 @@ abstract class AbstractRestfulController extends AbstractController
     /**
      * Return single resource
      *
+     * @param  mixed $id
      * @return mixed
      */
-    public function get(mixed $id)
+    public function get($id)
     {
         $this->response->setStatusCode(405);
 
@@ -229,7 +228,7 @@ abstract class AbstractRestfulController extends AbstractController
      * @param  mixed $data
      * @return mixed
      */
-    public function replaceList(mixed $data)
+    public function replaceList($data)
     {
         $this->response->setStatusCode(405);
 
@@ -247,7 +246,7 @@ abstract class AbstractRestfulController extends AbstractController
      * @param  mixed $data
      * @return mixed
      */
-    public function patchList(mixed $data)
+    public function patchList($data)
     {
         $this->response->setStatusCode(405);
 
@@ -259,9 +258,11 @@ abstract class AbstractRestfulController extends AbstractController
     /**
      * Update an existing resource
      *
+     * @param  mixed $id
+     * @param  mixed $data
      * @return mixed
      */
-    public function update(mixed $id, mixed $data)
+    public function update($id, $data)
     {
         $this->response->setStatusCode(405);
 
@@ -300,7 +301,7 @@ abstract class AbstractRestfulController extends AbstractController
     public function dispatch(Request $request, Response $response = null)
     {
         if (! $request instanceof HttpRequest) {
-            throw new InvalidArgumentException('Expected an HTTP request');
+            throw new Exception\InvalidArgumentException('Expected an HTTP request');
         }
 
         return parent::dispatch($request, $response);
@@ -322,7 +323,7 @@ abstract class AbstractRestfulController extends AbstractController
              * @todo Determine requirements for when route match is missing.
              *       Potentially allow pulling directly from request metadata?
              */
-            throw new DomainException('Missing route matches; unsure how to retrieve action');
+            throw new Exception\DomainException('Missing route matches; unsure how to retrieve action');
         }
 
         $request = $e->getRequest();
@@ -410,7 +411,7 @@ abstract class AbstractRestfulController extends AbstractController
                 try {
                     $action = 'patchList';
                     $return = $this->patchList($data);
-                } catch (RuntimeException) {
+                } catch (Exception\RuntimeException $ex) {
                     $response = $e->getResponse();
                     $response->setStatusCode(405);
                     return $response;
@@ -450,6 +451,7 @@ abstract class AbstractRestfulController extends AbstractController
     /**
      * Process post data and call create
      *
+     * @param Request $request
      * @return mixed
      * @throws Exception\DomainException If a JSON request was made, but no
      *    method for parsing JSON is available.
@@ -466,6 +468,7 @@ abstract class AbstractRestfulController extends AbstractController
     /**
      * Check if request has certain content type
      *
+     * @param  Request $request
      * @param  string|null $contentType
      * @return bool
      */
@@ -478,7 +481,7 @@ abstract class AbstractRestfulController extends AbstractController
         }
 
         $requestedContentType = $headerContentType->getFieldValue();
-        if (str_contains($requestedContentType, ';')) {
+        if (false !== strpos($requestedContentType, ';')) {
             $headerData = explode(';', $requestedContentType);
             $requestedContentType = array_shift($headerData);
         }
@@ -523,9 +526,9 @@ abstract class AbstractRestfulController extends AbstractController
     public function addHttpMethodHandler($method, /* Callable */ $handler)
     {
         if (! is_callable($handler)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new Exception\InvalidArgumentException(sprintf(
                 'Invalid HTTP method handler: must be a callable; received "%s"',
-                (get_debug_type($handler))
+                (is_object($handler) ? get_class($handler) : gettype($handler))
             ));
         }
         $method = strtolower($method);
@@ -539,7 +542,7 @@ abstract class AbstractRestfulController extends AbstractController
      * Attempts to see if an identifier was passed in either the URI or the
      * query string, returning it if found. Otherwise, returns a boolean false.
      *
-     * @param RouteMatch $routeMatch
+     * @param  \Laminas\Router\RouteMatch $routeMatch
      * @param  Request $request
      * @return false|mixed
      */
@@ -573,7 +576,7 @@ abstract class AbstractRestfulController extends AbstractController
      * @throws Exception\DomainException If a JSON request was made, but no
      *    method for parsing JSON is available.
      */
-    protected function processBodyContent(mixed $request)
+    protected function processBodyContent($request)
     {
         $content = $request->getContent();
 
@@ -619,7 +622,7 @@ abstract class AbstractRestfulController extends AbstractController
             return Json::decode($string, (int) $this->jsonDecodeType);
         }
 
-        throw new DomainException(sprintf(
+        throw new Exception\DomainException(sprintf(
             'Unable to parse JSON request, due to missing ext/json and/or %s',
             Json::class
         ));

@@ -6,10 +6,10 @@ namespace Laminas\Diactoros;
 
 use Psr\Http\Message\UriInterface;
 use SensitiveParameter;
-use Stringable;
 
 use function array_keys;
 use function explode;
+use function get_class;
 use function gettype;
 use function implode;
 use function is_float;
@@ -23,9 +23,8 @@ use function preg_replace;
 use function preg_replace_callback;
 use function rawurlencode;
 use function sprintf;
-use function str_contains;
 use function str_split;
-use function str_starts_with;
+use function strpos;
 use function strtolower;
 use function substr;
 
@@ -38,10 +37,8 @@ use function substr;
  * might change state are implemented such that they retain the internal
  * state of the current instance and return a new instance that contains the
  * changed state.
- *
- * @psalm-immutable
  */
-class Uri implements UriInterface, Stringable
+class Uri implements UriInterface
 {
     /**
      * Sub-delimiters used in user info, query strings and fragments.
@@ -69,7 +66,8 @@ class Uri implements UriInterface, Stringable
 
     private string $host = '';
 
-    private ?int $port = null;
+    /** @var int|null */
+    private $port;
 
     private string $path = '';
 
@@ -111,11 +109,10 @@ class Uri implements UriInterface, Stringable
             return $this->uriString;
         }
 
-        /** @psalm-suppress ImpureMethodCall, InaccessibleProperty */
         $this->uriString = static::createUriString(
             $this->scheme,
             $this->getAuthority(),
-            $this->path, // Absolute URIs should use a "/" for an empty path
+            $this->getPath(), // Absolute URIs should use a "/" for an empty path
             $this->query,
             $this->fragment
         );
@@ -187,18 +184,7 @@ class Uri implements UriInterface, Stringable
      */
     public function getPath(): string
     {
-        if ('' === $this->path) {
-            // No path
-            return $this->path;
-        }
-
-        if ($this->path[0] !== '/') {
-            // Relative path
-            return $this->path;
-        }
-
-        // Ensure only one leading slash, to prevent XSS attempts.
-        return '/' . ltrim($this->path, '/');
+        return $this->path;
     }
 
     /**
@@ -226,7 +212,7 @@ class Uri implements UriInterface, Stringable
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects a string argument; received %s',
                 __METHOD__,
-                is_object($scheme) ? $scheme::class : gettype($scheme)
+                is_object($scheme) ? get_class($scheme) : gettype($scheme)
             ));
         }
 
@@ -263,14 +249,14 @@ class Uri implements UriInterface, Stringable
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects a string user argument; received %s',
                 __METHOD__,
-                is_object($user) ? $user::class : gettype($user)
+                is_object($user) ? get_class($user) : gettype($user)
             ));
         }
         if (null !== $password && ! is_string($password)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects a string or null password argument; received %s',
                 __METHOD__,
-                is_object($password) ? $password::class : gettype($password)
+                is_object($password) ? get_class($password) : gettype($password)
             ));
         }
 
@@ -301,7 +287,7 @@ class Uri implements UriInterface, Stringable
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects a string argument; received %s',
                 __METHOD__,
-                is_object($host) ? $host::class : gettype($host)
+                is_object($host) ? get_class($host) : gettype($host)
             ));
         }
 
@@ -325,7 +311,7 @@ class Uri implements UriInterface, Stringable
             if (! is_numeric($port) || is_float($port)) {
                 throw new Exception\InvalidArgumentException(sprintf(
                     'Invalid port "%s" specified; must be an integer, an integer string, or null',
-                    is_object($port) ? $port::class : gettype($port)
+                    is_object($port) ? get_class($port) : gettype($port)
                 ));
             }
 
@@ -361,13 +347,13 @@ class Uri implements UriInterface, Stringable
             );
         }
 
-        if (str_contains($path, '?')) {
+        if (strpos($path, '?') !== false) {
             throw new Exception\InvalidArgumentException(
                 'Invalid path provided; must not contain a query string'
             );
         }
 
-        if (str_contains($path, '#')) {
+        if (strpos($path, '#') !== false) {
             throw new Exception\InvalidArgumentException(
                 'Invalid path provided; must not contain a URI fragment'
             );
@@ -397,7 +383,7 @@ class Uri implements UriInterface, Stringable
             );
         }
 
-        if (str_contains($query, '#')) {
+        if (strpos($query, '#') !== false) {
             throw new Exception\InvalidArgumentException(
                 'Query string must not include a URI fragment'
             );
@@ -425,7 +411,7 @@ class Uri implements UriInterface, Stringable
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects a string argument; received %s',
                 __METHOD__,
-                is_object($fragment) ? $fragment::class : gettype($fragment)
+                is_object($fragment) ? get_class($fragment) : gettype($fragment)
             ));
         }
 
@@ -444,9 +430,6 @@ class Uri implements UriInterface, Stringable
 
     /**
      * Parse a URI into its parts, and set the properties
-     *
-     * @psalm-suppress InaccessibleProperty Method is only called in {@see Uri::__construct} and thus immutability is
-     *                                      still given.
      */
     private function parseUri(string $uri): void
     {
@@ -491,7 +474,7 @@ class Uri implements UriInterface, Stringable
             $uri .= '//' . $authority;
         }
 
-        if ('' !== $path && ! str_starts_with($path, '/')) {
+        if ('' !== $path && '/' !== substr($path, 0, 1)) {
             $path = '/' . $path;
         }
 
@@ -557,12 +540,8 @@ class Uri implements UriInterface, Stringable
     {
         $part = $this->filterInvalidUtf8($part);
 
-        /**
-         * @psalm-suppress ImpureFunctionCall Even tho the callback targets this immutable class,
-         *                                    psalm reports an issue here.
-         * Note the addition of `%` to initial charset; this allows `|` portion
-         * to match and thus prevent double-encoding.
-         */
+        // Note the addition of `%` to initial charset; this allows `|` portion
+        // to match and thus prevent double-encoding.
         return preg_replace_callback(
             '/(?:[^%' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMS . ']+|%(?![A-Fa-f0-9]{2}))/u',
             [$this, 'urlEncodeChar'],
@@ -577,15 +556,24 @@ class Uri implements UriInterface, Stringable
     {
         $path = $this->filterInvalidUtf8($path);
 
-        /**
-         * @psalm-suppress ImpureFunctionCall Even tho the callback targets this immutable class,
-         *                                    psalm reports an issue here.
-         */
-        return preg_replace_callback(
+        $path = preg_replace_callback(
             '/(?:[^' . self::CHAR_UNRESERVED . ')(:@&=\+\$,\/;%]+|%(?![A-Fa-f0-9]{2}))/u',
             [$this, 'urlEncodeChar'],
             $path
         );
+
+        if ('' === $path) {
+            // No path
+            return $path;
+        }
+
+        if ($path[0] !== '/') {
+            // Relative path
+            return $path;
+        }
+
+        // Ensure only one leading slash, to prevent XSS attempts.
+        return '/' . ltrim($path, '/');
     }
 
     /**
@@ -615,7 +603,7 @@ class Uri implements UriInterface, Stringable
      */
     private function filterQuery(string $query): string
     {
-        if ('' !== $query && str_starts_with($query, '?')) {
+        if ('' !== $query && strpos($query, '?') === 0) {
             $query = substr($query, 1);
         }
 
@@ -655,7 +643,7 @@ class Uri implements UriInterface, Stringable
      */
     private function filterFragment(string $fragment): string
     {
-        if ('' !== $fragment && str_starts_with($fragment, '#')) {
+        if ('' !== $fragment && strpos($fragment, '#') === 0) {
             $fragment = '%23' . substr($fragment, 1);
         }
 
@@ -669,10 +657,6 @@ class Uri implements UriInterface, Stringable
     {
         $value = $this->filterInvalidUtf8($value);
 
-        /**
-         * @psalm-suppress ImpureFunctionCall Even tho the callback targets this immutable class,
-         *                                    psalm reports an issue here.
-         */
         return preg_replace_callback(
             '/(?:[^' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMS . '%:@\/\?]+|%(?![A-Fa-f0-9]{2}))/u',
             [$this, 'urlEncodeChar'],

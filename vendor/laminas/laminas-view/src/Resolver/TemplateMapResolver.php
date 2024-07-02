@@ -14,6 +14,7 @@ use Traversable;
 
 use function array_key_exists;
 use function array_replace_recursive;
+use function get_class;
 use function gettype;
 use function is_array;
 use function is_object;
@@ -63,7 +64,7 @@ class TemplateMapResolver implements IteratorAggregate, ResolverInterface
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s: expects an array or Traversable, received "%s"',
                 __METHOD__,
-                is_object($map) ? $map::class : gettype($map)
+                is_object($map) ? get_class($map) : gettype($map)
             ));
         }
 
@@ -94,7 +95,7 @@ class TemplateMapResolver implements IteratorAggregate, ResolverInterface
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s: expects a string, array, or Traversable for the first argument; received "%s"',
                 __METHOD__,
-                is_object($nameOrMap) ? $nameOrMap::class : gettype($nameOrMap)
+                is_object($nameOrMap) ? get_class($nameOrMap) : gettype($nameOrMap)
             ));
         }
 
@@ -122,7 +123,7 @@ class TemplateMapResolver implements IteratorAggregate, ResolverInterface
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s: expects an array or Traversable, received "%s"',
                 __METHOD__,
-                is_object($map) ? $map::class : gettype($map)
+                is_object($map) ? get_class($map) : gettype($map)
             ));
         }
 

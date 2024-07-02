@@ -30,6 +30,7 @@ class Constant extends Token implements ProcessorInterface
      * @param string $suffix Optional suffix
      * @param bool $enableKeyProcessing Whether or not to enable processing of
      *     constant values in configuration keys; defaults to false.
+     * @return \Laminas\Config\Processor\Constant
      */
     public function __construct($userOnly = true, $prefix = '', $suffix = '', $enableKeyProcessing = false)
     {
@@ -73,7 +74,7 @@ class Constant extends Token implements ProcessorInterface
     {
         if ($this->userOnly) {
             $constants = get_defined_constants(true);
-            $constants = $constants['user'] ?? [];
+            $constants = isset($constants['user']) ? $constants['user'] : [];
             $this->setTokens($constants);
         } else {
             $this->setTokens(get_defined_constants());
@@ -82,7 +83,6 @@ class Constant extends Token implements ProcessorInterface
 
     /**
      * Get current token registry.
-     *
      * @return array
      */
     public function getTokens()

@@ -21,8 +21,6 @@ interface ConfigInterface
 
     /**
      * Returns the actual class name for an alias
-     *
-     * @return class-string|null
      */
     public function getClassForAlias(string $name): ?string;
 
@@ -30,15 +28,12 @@ interface ConfigInterface
      * Returns the instantiation parameters for the given type
      *
      * @param  string $type The alias or class name
-     * @return array<array-key, mixed> The configured parameters
+     * @return array The configured parameters
      */
     public function getParameters(string $type): array;
 
     /**
      * Set the instantiation parameters for the given type
-     *
-     * @param array<array-key, mixed> $params
-     * @return mixed
      */
     public function setParameters(string $type, array $params);
 

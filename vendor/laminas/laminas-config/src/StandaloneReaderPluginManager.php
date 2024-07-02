@@ -13,7 +13,6 @@ use function strtolower;
 
 class StandaloneReaderPluginManager implements ContainerInterface
 {
-    /** @var array<string, class-string> */
     private $knownPlugins = [
         'ini'            => Reader\Ini::class,
         'json'           => Reader\Json::class,

@@ -2,9 +2,6 @@
 
 namespace Laminas\Mvc\Service;
 
-use Laminas\View\Helper\Url;
-use Laminas\View\Helper\BasePath;
-use Laminas\View\Helper\Doctype;
 use Interop\Container\ContainerInterface;
 use Laminas\Router\RouteMatch;
 use Laminas\ServiceManager\Exception\ServiceNotCreatedException;
@@ -13,7 +10,7 @@ use Laminas\View\HelperPluginManager;
 
 class ViewHelperManagerFactory extends AbstractPluginManagerFactory
 {
-    public const PLUGIN_MANAGER_CLASS = HelperPluginManager::class;
+    const PLUGIN_MANAGER_CLASS = HelperPluginManager::class;
 
     /**
      * An array of helper configuration classes to ensure are on the helper_map stack.
@@ -37,7 +34,7 @@ class ViewHelperManagerFactory extends AbstractPluginManagerFactory
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $options = $options ?: [];
-        $options['factories'] ??= [];
+        $options['factories'] = isset($options['factories']) ? $options['factories'] : [];
         $plugins = parent::__invoke($container, $requestedName, $options);
 
         // Override plugin factories
@@ -49,6 +46,8 @@ class ViewHelperManagerFactory extends AbstractPluginManagerFactory
     /**
      * Inject override factories into the plugin manager.
      *
+     * @param HelperPluginManager $plugins
+     * @param ContainerInterface $services
      * @return HelperPluginManager
      */
     private function injectOverrideFactories(HelperPluginManager $plugins, ContainerInterface $services)
@@ -83,16 +82,19 @@ class ViewHelperManagerFactory extends AbstractPluginManagerFactory
      */
     private function createUrlHelperFactory(ContainerInterface $services)
     {
-        return static function () use ($services) : Url {
+        return function () use ($services) {
             $helper = new ViewHelper\Url;
             $helper->setRouter($services->get('HttpRouter'));
+
             $match = $services->get('Application')
                 ->getMvcEvent()
                 ->getRouteMatch()
             ;
+
             if ($match instanceof RouteMatch) {
                 $helper->setRouteMatch($match);
             }
+
             return $helper;
         };
     }
@@ -107,17 +109,21 @@ class ViewHelperManagerFactory extends AbstractPluginManagerFactory
      */
     private function createBasePathHelperFactory(ContainerInterface $services)
     {
-        return static function () use ($services) : BasePath {
+        return function () use ($services) {
             $config = $services->has('config') ? $services->get('config') : [];
             $helper = new ViewHelper\BasePath;
+
             if (isset($config['view_manager']) && isset($config['view_manager']['base_path'])) {
                 $helper->setBasePath($config['view_manager']['base_path']);
                 return $helper;
             }
+
             $request = $services->get('Request');
+
             if (is_callable([$request, 'getBasePath'])) {
                 $helper->setBasePath($request->getBasePath());
             }
+
             return $helper;
         };
     }
@@ -133,9 +139,9 @@ class ViewHelperManagerFactory extends AbstractPluginManagerFactory
      */
     private function createDoctypeHelperFactory(ContainerInterface $services)
     {
-        return static function () use ($services) : Doctype {
+        return function () use ($services) {
             $config = $services->has('config') ? $services->get('config') : [];
-            $config = $config['view_manager'] ?? [];
+            $config = isset($config['view_manager']) ? $config['view_manager'] : [];
             $helper = new ViewHelper\Doctype;
             if (isset($config['doctype']) && $config['doctype']) {
                 $helper->setDoctype($config['doctype']);

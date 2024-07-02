@@ -68,13 +68,6 @@ class SetCookie implements MultipleHeaderInterface
     ];
 
     /**
-     * @deprecated This property is deprecated, and will be removed
-     *
-     * @var string
-     */
-    public $type;
-
-    /**
      * Cookie name
      *
      * @var string|null

@@ -8,8 +8,8 @@ use Laminas\Router\RouteMatch;
 
 class ModuleRouteListener extends AbstractListenerAggregate
 {
-    public const MODULE_NAMESPACE    = '__NAMESPACE__';
-    public const ORIGINAL_CONTROLLER = '__CONTROLLER__';
+    const MODULE_NAMESPACE    = '__NAMESPACE__';
+    const ORIGINAL_CONTROLLER = '__CONTROLLER__';
 
     /**
      * Attach to an event manager
@@ -54,7 +54,7 @@ class ModuleRouteListener extends AbstractListenerAggregate
         }
 
         // Ensure the module namespace has not already been applied
-        if (str_starts_with($controller, $module)) {
+        if (0 === strpos($controller, $module)) {
             return;
         }
 

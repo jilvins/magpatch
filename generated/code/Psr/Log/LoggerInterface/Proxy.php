@@ -90,7 +90,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function emergency(\Stringable|string $message, array $context = [])
+    public function emergency($message, array $context = [])
     {
         return $this->_getSubject()->emergency($message, $context);
     }
@@ -98,7 +98,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function alert(\Stringable|string $message, array $context = [])
+    public function alert($message, array $context = [])
     {
         return $this->_getSubject()->alert($message, $context);
     }
@@ -106,7 +106,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function critical(\Stringable|string $message, array $context = [])
+    public function critical($message, array $context = [])
     {
         return $this->_getSubject()->critical($message, $context);
     }
@@ -114,7 +114,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function error(\Stringable|string $message, array $context = [])
+    public function error($message, array $context = [])
     {
         return $this->_getSubject()->error($message, $context);
     }
@@ -122,7 +122,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function warning(\Stringable|string $message, array $context = [])
+    public function warning($message, array $context = [])
     {
         return $this->_getSubject()->warning($message, $context);
     }
@@ -130,7 +130,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function notice(\Stringable|string $message, array $context = [])
+    public function notice($message, array $context = [])
     {
         return $this->_getSubject()->notice($message, $context);
     }
@@ -138,7 +138,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function info(\Stringable|string $message, array $context = [])
+    public function info($message, array $context = [])
     {
         return $this->_getSubject()->info($message, $context);
     }
@@ -146,7 +146,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function debug(\Stringable|string $message, array $context = [])
+    public function debug($message, array $context = [])
     {
         return $this->_getSubject()->debug($message, $context);
     }
@@ -154,7 +154,7 @@ class Proxy implements \Psr\Log\LoggerInterface, \Magento\Framework\ObjectManage
     /**
      * {@inheritdoc}
      */
-    public function log($level, \Stringable|string $message, array $context = [])
+    public function log($level, $message, array $context = [])
     {
         return $this->_getSubject()->log($level, $message, $context);
     }

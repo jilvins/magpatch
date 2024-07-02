@@ -12,6 +12,7 @@ use Traversable;
 
 use function array_merge;
 use function func_num_args;
+use function get_class;
 use function gettype;
 use function is_array;
 use function is_bool;
@@ -121,7 +122,7 @@ class Url extends AbstractHelper
                 '%s expects a %s instance; received %s',
                 __METHOD__,
                 RouteStackInterface::class,
-                is_object($router) ? $router::class : gettype($router)
+                is_object($router) ? get_class($router) : gettype($router)
             ));
         }
 
@@ -143,7 +144,7 @@ class Url extends AbstractHelper
                 '%s expects a %s instance; received %s',
                 __METHOD__,
                 RouteMatch::class,
-                is_object($routeMatch) ? $routeMatch::class : gettype($routeMatch)
+                is_object($routeMatch) ? get_class($routeMatch) : gettype($routeMatch)
             ));
         }
 

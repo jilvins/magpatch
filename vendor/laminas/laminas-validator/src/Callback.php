@@ -95,9 +95,10 @@ class Callback extends AbstractValidator
     /**
      * Sets options for the callback
      *
+     * @param  mixed $options
      * @return $this Provides a fluent interface
      */
-    public function setCallbackOptions(mixed $options)
+    public function setCallbackOptions($options)
     {
         $this->options['callbackOptions'] = (array) $options;
         return $this;
@@ -139,7 +140,7 @@ class Callback extends AbstractValidator
                 $this->error(self::INVALID_VALUE);
                 return false;
             }
-        } catch (Exception) {
+        } catch (Exception $e) {
             $this->error(self::INVALID_CALLBACK);
             return false;
         }

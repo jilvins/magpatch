@@ -37,7 +37,7 @@ class HttpDefaultRenderingStrategyFactory implements FactoryInterface
      */
     private function injectLayoutTemplate(DefaultRenderingStrategy $strategy, array $config)
     {
-        $layout = $config['layout'] ?? 'layout/layout';
+        $layout = isset($config['layout']) ? $config['layout'] : 'layout/layout';
         $strategy->setLayoutTemplate($layout);
     }
 }
